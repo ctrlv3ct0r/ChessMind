@@ -455,7 +455,7 @@ private fun ChessMindApp(context: Context) {
                 Spacer(Modifier.height(8.dp))
                 if (!menuOpen) ChessBoard(fen, selected, legalTargets, lastMove) { selectSquare(it) }
                 Spacer(Modifier.height(12.dp))
-                Surface(color = panel, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
+                Surface(color = if (darkTheme) panel else Color(0xFFE8EDF3), shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(13.dp)) {
                         Text(status, color = gameTextColor, fontWeight = FontWeight.SemiBold)
                         Text(tr("Профиль: ${styleName(profile)} · сложность $difficulty/4", "Profile: ${styleName(profile)} · difficulty $difficulty/4", "档案：${styleName(profile)} · 难度 $difficulty/4", "प्रोफ़ाइल: ${styleName(profile)} · कठिनाई $difficulty/4"), color = accentColor, fontSize = 11.sp)
@@ -497,7 +497,7 @@ private fun ChessMindApp(context: Context) {
                 }
                 if (clockEnabled) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") Color(0xFFFFC66D) else cream, fontWeight = FontWeight.Bold)
+                        Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") Color(0xFFFFC66D) else gameTextColor, fontWeight = FontWeight.Bold)
                         Text("♟ ${clockText(blackSeconds)}", color = if (board.sideToMove.toString() == "BLACK") Color(0xFFFFC66D) else cream, fontWeight = FontWeight.Bold)
                         TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = green) }
                     }
