@@ -266,7 +266,7 @@ private fun ChessMindApp(context: Context) {
     val textColor = if (darkTheme) cream else Color(0xFF101827)
     val accentColor = if (darkTheme) green else Color(0xFF245C37)
     val gameTextColor = if (darkTheme) cream else Color(0xFF101827)
-    val gameMutedColor = if (darkTheme) Color(0xFFD8DCE8) else Color(0xFF344054)
+    val gameMutedColor = if (darkTheme) Color(0xFFD8DCE8) else Color(0xFF263238)
     var clockEnabled by remember { mutableStateOf(gamePrefs.getBoolean("clock_enabled", false)) }
     var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5)) }
     var whiteSeconds by remember { mutableIntStateOf(gamePrefs.getInt("white_seconds", 300)) }
@@ -414,7 +414,7 @@ private fun ChessMindApp(context: Context) {
         }
     }
 
-    val scheme = if (darkTheme) darkColorScheme(primary = green, background = forest, surface = panel, onSurface = cream) else lightColorScheme(primary = Color(0xFF315F3D), background = Color(0xFFF5F3EE), surface = Color.White, onSurface = Color(0xFF18211D), onPrimary = Color.White, onBackground = Color(0xFF18211D))
+    val scheme = if (darkTheme) darkColorScheme(primary = Color(0xFFFFC84A), onPrimary = Color(0xFF101827), secondary = Color(0xFFD8C9FF), onSecondary = Color(0xFF101827), background = forest, onBackground = Color(0xFFF7F3EA), surface = panel, onSurface = Color(0xFFF7F3EA), surfaceVariant = Color(0xFF263047), onSurfaceVariant = Color(0xFFE0E5F0)) else lightColorScheme(primary = Color(0xFF174D2B), onPrimary = Color.White, secondary = Color(0xFF55358A), onSecondary = Color.White, background = Color(0xFFF5F3EE), onBackground = Color(0xFF080B18), surface = Color.White, onSurface = Color(0xFF080B18), surfaceVariant = Color(0xFFE8EDF3), onSurfaceVariant = Color(0xFF18211D), outline = Color(0xFF536174))
     MaterialTheme(colorScheme = scheme) {
         Surface(Modifier.fillMaxSize(), color = bgColor) {
             if (menuOpen) {
@@ -497,15 +497,15 @@ private fun ChessMindApp(context: Context) {
                 }
                 if (clockEnabled) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") Color(0xFFFFC66D) else gameTextColor, fontWeight = FontWeight.Bold)
-                        Text("♟ ${clockText(blackSeconds)}", color = if (board.sideToMove.toString() == "BLACK") Color(0xFFFFC66D) else cream, fontWeight = FontWeight.Bold)
+                        Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
+                        Text("♟ ${clockText(blackSeconds)}", color = if (board.sideToMove.toString() == "BLACK") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
                         TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = green) }
                     }
                 }
                 Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = accentColor, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Text(if (sanHistory.isEmpty()) tr("Партия ещё не началась", "Game has not started", "对局尚未开始", "खेल अभी शुरू नहीं हुआ") else sanHistory.takeLast(8).joinToString("   "),
                     Modifier.fillMaxWidth(), color = gameMutedColor, fontSize = 11.sp)
-                Text(tr("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", "YOUR GOAL IS TO IMPROVE, NOT JUST WIN.", "目标是不断进步，而不只是获胜。", "लक्ष्य बेहतर बनना है, सिर्फ जीतना नहीं।"), color = green, fontSize = 9.sp, letterSpacing = 0.6.sp)
+                Text(tr("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", "YOUR GOAL IS TO IMPROVE, NOT JUST WIN.", "目标是不断进步，而不只是获胜。", "लक्ष्य बेहतर बनना है, सिर्फ जीतना नहीं।"), color = accentColor, fontSize = 9.sp, letterSpacing = 0.6.sp)
             }
             }
         }
