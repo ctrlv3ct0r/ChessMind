@@ -267,6 +267,8 @@ private fun ChessMindApp(context: Context) {
     val accentColor = if (darkTheme) green else Color(0xFF245C37)
     val gameTextColor = if (darkTheme) cream else Color(0xFF101827)
     val gameMutedColor = if (darkTheme) Color(0xFFD8DCE8) else Color(0xFF263238)
+    val dialogTextColor = Color(0xFFF7F3EA)
+    val dialogAccentColor = Color(0xFFFFC84A)
     var clockEnabled by remember { mutableStateOf(gamePrefs.getBoolean("clock_enabled", false)) }
     var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5)) }
     var whiteSeconds by remember { mutableIntStateOf(gamePrefs.getInt("white_seconds", 300)) }
@@ -522,10 +524,10 @@ private fun ChessMindApp(context: Context) {
     if (rulesOpen) AlertDialog(
         containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp),
         onDismissRequest = { rulesOpen = false },
-        title = { Text(tr("Правила шахмат", "Chess rules", "国际象棋规则", "शतरंज के नियम"), color = textColor, fontWeight = FontWeight.Bold) },
+        title = { Text(tr("Правила шахмат", "Chess rules", "国际象棋规则", "शतरंज के नियम"), color = dialogTextColor, fontWeight = FontWeight.Bold) },
         text = {
             Column(Modifier.heightIn(max = 470.dp).verticalScroll(rememberScrollState())) {
-                Text(tr("ЦЕЛЬ ИГРЫ", "THE GOAL", "游戏目标", "खेल का लक्ष्य"), color = accentColor, fontWeight = FontWeight.Bold)
+                Text(tr("ЦЕЛЬ ИГРЫ", "THE GOAL", "游戏目标", "खेल का लक्ष्य"), color = dialogAccentColor, fontWeight = FontWeight.Bold)
                 Text(tr("Твоя задача — поставить мат королю соперника. Мат — это шах, от которого король уже не может спастись. Белые ходят первыми, затем игроки ходят по очереди.", "Your goal is to checkmate the opponent's king. Checkmate means the king is attacked and has no way to escape. White moves first, then players take turns.", "你的目标是将死对方的王。将死表示王受到攻击且无路可逃。白方先走，然后双方轮流走棋。", "आपका लक्ष्य विरोधी राजा को शह-मात देना है। शह-मात में राजा पर हमला होता है और बचने का कोई रास्ता नहीं होता। सफेद पहले चलता है।"), color = textColor)
                 Spacer(Modifier.height(10.dp))
                 Text(tr("КАК ХОДЯТ ФИГУРЫ", "HOW THE PIECES MOVE", "棋子如何移动", "मोहरों की चाल"), color = accentColor, fontWeight = FontWeight.Bold)
@@ -551,7 +553,7 @@ private fun ChessMindApp(context: Context) {
     if (chatOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { chatOpen = false }, title = { Text(tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट"), color = textColor) },
         text = { Column {
             LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = textColor, modifier = Modifier.padding(vertical = 4.dp)) } }
-            OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश"), color = textColor) }, textStyle = androidx.compose.ui.text.TextStyle(color = textColor), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = textColor, unfocusedTextColor = textColor, focusedBorderColor = accentColor, unfocusedBorderColor = accentColor, focusedLabelColor = accentColor, unfocusedLabelColor = textColor))
+            OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश"), color = textColor) }, textStyle = androidx.compose.ui.text.TextStyle(color = textColor), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = dialogTextColor, unfocusedTextColor = dialogTextColor, focusedBorderColor = dialogAccentColor, unfocusedBorderColor = dialogAccentColor, focusedLabelColor = dialogAccentColor, unfocusedLabelColor = dialogTextColor))
         } }, confirmButton = { Row {
             TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें"), color = accentColor) }
             TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) }
