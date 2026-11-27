@@ -264,7 +264,7 @@ private fun ChessMindApp(context: Context) {
     val bgColor = if (darkTheme) forest else Color(0xFFF5F3EE)
     val surfaceColor = if (darkTheme) panel else Color(0xFFFFFFFF)
     val textColor = if (darkTheme) cream else Color(0xFF101827)
-    val accentColor = if (darkTheme) green else Color(0xFF245C37)
+    val accentColor = if (darkTheme) green else Color(0xFF101010)
     val gameTextColor = if (darkTheme) cream else Color(0xFF101827)
     val gameMutedColor = if (darkTheme) Color(0xFFD8DCE8) else Color(0xFF263238)
     val dialogTextColor = Color(0xFFF7F3EA)
@@ -532,9 +532,9 @@ private fun ChessMindApp(context: Context) {
         text = {
             Column(Modifier.heightIn(max = 470.dp).verticalScroll(rememberScrollState())) {
                 Text(tr("ЦЕЛЬ ИГРЫ", "THE GOAL", "游戏目标", "खेल का लक्ष्य"), color = dialogAccentColor, fontWeight = FontWeight.Bold)
-                Text(tr("Твоя задача — поставить мат королю соперника. Мат — это шах, от которого король уже не может спастись. Белые ходят первыми, затем игроки ходят по очереди.", "Your goal is to checkmate the opponent's king. Checkmate means the king is attacked and has no way to escape. White moves first, then players take turns.", "你的目标是将死对方的王。将死表示王受到攻击且无路可逃。白方先走，然后双方轮流走棋。", "आपका लक्ष्य विरोधी राजा को शह-मात देना है। शह-मात में राजा पर हमला होता है और बचने का कोई रास्ता नहीं होता। सफेद पहले चलता है।"), color = textColor)
+                Text(tr("Твоя задача — поставить мат королю соперника. Мат — это шах, от которого король уже не может спастись. Белые ходят первыми, затем игроки ходят по очереди.", "Your goal is to checkmate the opponent's king. Checkmate means the king is attacked and has no way to escape. White moves first, then players take turns.", "你的目标是将死对方的王。将死表示王受到攻击且无路可逃。白方先走，然后双方轮流走棋。", "आपका लक्ष्य विरोधी राजा को शह-मात देना है। शह-मात में राजा पर हमला होता है और बचने का कोई रास्ता नहीं होता। सफेद पहले चलता है।"), color = dialogTextColor)
                 Spacer(Modifier.height(10.dp))
-                Text(tr("КАК ХОДЯТ ФИГУРЫ", "HOW THE PIECES MOVE", "棋子如何移动", "मोहरों की चाल"), color = accentColor, fontWeight = FontWeight.Bold)
+                Text(tr("КАК ХОДЯТ ФИГУРЫ", "HOW THE PIECES MOVE", "棋子如何移动", "मोहरों की चाल"), color = dialogAccentColor, fontWeight = FontWeight.Bold)
                 Text(tr("♙ Пешка — обычно идёт на 1 клетку вперёд. С начальной позиции может пойти на 2 клетки. Бьёт по диагонали на 1 клетку. Назад не ходит.\n\n♖ Ладья — ходит на любое число свободных клеток прямо: вверх, вниз, влево или вправо.\n\n♗ Слон — ходит по диагонали на любое число свободных клеток.\n\n♘ Конь — ходит буквой «Г»: две клетки в одном направлении и одну в сторону. Может перепрыгивать через фигуры.\n\n♕ Ферзь — ходит прямо и по диагонали на любое число свободных клеток.\n\n♔ Король — ходит на 1 клетку в любом направлении. Нельзя делать ход, после которого твой король останется под ударом.", "♙ Pawn — normally moves 1 square forward; from its starting square it may move 2. It captures 1 square diagonally and never moves backward.\n\n♖ Rook — moves any number of free squares in straight lines: up, down, left or right.\n\n♗ Bishop — moves any number of free squares diagonally.\n\n♘ Knight — moves in an L shape: two squares one way and one sideways. It can jump over pieces.\n\n♕ Queen — moves any number of free squares straight or diagonally.\n\n♔ King — moves 1 square in any direction. You may not leave your king under attack.", "♙ 兵 — 通常向前走一格，起始位置可走两格；斜向一格吃子，不能后退。\n\n♖ 车 — 沿横线或竖线移动任意格。\n\n♗ 象 — 沿对角线移动任意格。\n\n♘ 马 — 走日字形，可以跳过其他棋子。\n\n♕ 后 — 可以直线或斜线移动任意格。\n\n♔ 王 — 向任意方向走一格，不能走到被攻击的位置。", "♙ प्यादा — सामान्यतः एक घर आगे चलता है; शुरुआती जगह से दो घर चल सकता है। तिरछे एक घर मारता है। पीछे नहीं चलता।\n\n♖ हाथी — सीधी पंक्ति या स्तंभ में चलता है।\n\n♗ ऊँट — तिरछे चलता है।\n\n♘ घोड़ा — L आकार में चलता है और मोहरों के ऊपर से कूद सकता है।\n\n♕ वज़ीर — सीधा या तिरछा चलता है।\n\n♔ राजा — किसी भी दिशा में एक घर चलता है। अपने राजा को हमले में छोड़ना मना है।"), color = textColor)
                 Spacer(Modifier.height(10.dp))
                 Text(tr("ВАЖНЫЕ ПОНЯТИЯ", "IMPORTANT TERMS", "重要概念", "ज़रूरी बातें"), color = accentColor, fontWeight = FontWeight.Bold)
@@ -546,17 +546,17 @@ private fun ChessMindApp(context: Context) {
     if (languageOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { languageOpen = false }, title = { Text(tr("Выбор языка", "Choose language", "选择语言", "भाषा चुनें"), color = textColor) },
         text = { Column {
             listOf("ru" to "Русский", "en" to "English", "zh" to "中文", "hi" to "हिन्दी").forEach { (code, label) ->
-                TextButton(onClick = { language = code; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putString("language", code).apply(); languageOpen = false }) { Text(label, color = if (language == code) accentColor else textColor, maxLines = 1, softWrap = false) }
+                TextButton(onClick = { language = code; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putString("language", code).apply(); languageOpen = false }) { Text(label, color = if (language == code) accentColor else dialogTextColor, maxLines = 1, softWrap = false) }
             }
-        } }, confirmButton = { TextButton(onClick = { languageOpen = false }) { Text("OK") } })
+        } }, confirmButton = { TextButton(onClick = { languageOpen = false }) { Text("OK", color = dialogAccentColor) } })
     if (authorOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { authorOpen = false }, title = { Text("ChessMind", color = textColor) },
         text = { Text(tr("Автор проекта: ChessMind. Версия прототипа.", "Project author: ChessMind. Prototype version.", "项目作者：ChessMind。原型版本。", "परियोजना लेखक: ChessMind। प्रोटोटाइप संस्करण।")) },
-        confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK") } })
+        confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK", color = dialogAccentColor) } })
     if (hintOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत"), color = textColor) },
         text = { Text(hintText, color = textColor) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK") } })
     if (chatOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { chatOpen = false }, title = { Text(tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट"), color = textColor) },
         text = { Column {
-            LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = textColor, modifier = Modifier.padding(vertical = 4.dp)) } }
+            LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = dialogTextColor, modifier = Modifier.padding(vertical = 4.dp)) } }
             OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश"), color = textColor) }, textStyle = androidx.compose.ui.text.TextStyle(color = textColor), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = dialogTextColor, unfocusedTextColor = dialogTextColor, focusedBorderColor = dialogAccentColor, unfocusedBorderColor = dialogAccentColor, focusedLabelColor = dialogAccentColor, unfocusedLabelColor = dialogTextColor))
         } }, confirmButton = { Row {
             TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें"), color = accentColor) }
