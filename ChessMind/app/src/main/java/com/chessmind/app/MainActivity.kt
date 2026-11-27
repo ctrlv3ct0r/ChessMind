@@ -390,14 +390,14 @@ private fun ChessMindApp(context: Context) {
                 }
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatCard(tr("ПАРТИЙ", "GAMES", "对局", "खेल"), profile.games.toString(), Modifier.weight(1f))
-                    StatCard(tr("ПОБЕД", "WINS", "胜利", "जीत"), profile.wins.toString(), Modifier.weight(1f))
+                    StatCard(tr("ПАРТИЙ", "GAMES", "对局", "खेल"), profile.games.toString(), Modifier.weight(1f), surfaceColor, textColor, accentColor)
+                    StatCard(tr("ПОБЕД", "WINS", "胜利", "जीत"), profile.wins.toString(), Modifier.weight(1f), surfaceColor, textColor, accentColor)
                     StatCard(tr("УРОВЕНЬ", "LEVEL", "等级", "स्तर"), when {
                         profile.rating < 750 -> tr("Старт", "Beginner", "入门", "शुरुआती")
                         profile.rating < 1000 -> tr("База", "Basic", "基础", "बुनियादी")
                         profile.rating < 1300 -> tr("Рост", "Improving", "进阶", "प्रगति")
                         else -> tr("Сильный", "Advanced", "高级", "उन्नत")
-                    }, Modifier.weight(1f))
+                    }, Modifier.weight(1f), surfaceColor, textColor, accentColor)
                 }
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -473,11 +473,11 @@ private fun styleName(p: PlayerProfile): String = when {
 }
 
 @Composable
-private fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
-    Surface(modifier, color = panel, shape = RoundedCornerShape(12.dp)) {
+private fun StatCard(label: String, value: String, modifier: Modifier = Modifier, surfaceColor: Color = panel, textColor: Color = cream, accentColor: Color = green) {
+    Surface(modifier, color = surfaceColor, shape = RoundedCornerShape(12.dp)) {
         Column(Modifier.padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(value, color = cream, fontWeight = FontWeight.Bold, fontSize = 17.sp)
-            Text(label, color = green, fontSize = 9.sp, letterSpacing = 0.8.sp)
+            Text(value, color = textColor, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text(label, color = accentColor, fontSize = 9.sp, letterSpacing = 0.8.sp)
         }
     }
 }
