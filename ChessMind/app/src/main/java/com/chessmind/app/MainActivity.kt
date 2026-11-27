@@ -288,16 +288,17 @@ private fun ChessMindApp(context: Context) {
                         Text("CHESSMIND", color = cream, fontSize = 25.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
                         Text(tr("АДАПТИВНЫЙ ШАХМАТНЫЙ ТРЕНЕР", "ADAPTIVE CHESS COACH", "自适应国际象棋教练", "अनुकूली शतरंज कोच"), color = green, fontSize = 9.sp, letterSpacing = 1.1.sp)
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        TextButton(onClick = { languageOpen = true }) { Text(language.uppercase(), color = green) }
-                        TextButton(onClick = { menuOpen = true }) { Text("☰", color = cream, fontSize = 20.sp) }
-                        TextButton(onClick = { chatOpen = true }) { Text(tr("Чат", "Chat", "聊天", "चैट"), color = cream, fontWeight = FontWeight.Bold) }
-                        Surface(color = panel, shape = RoundedCornerShape(14.dp)) {
-                            Text("♟ ${profile.rating}", Modifier.padding(horizontal = 10.dp, vertical = 9.dp), color = cream, fontWeight = FontWeight.Bold)
-                        }
+                    Surface(color = panel, shape = RoundedCornerShape(14.dp)) {
+                        Text("♟ ${profile.rating}", Modifier.padding(horizontal = 10.dp, vertical = 9.dp), color = cream, fontWeight = FontWeight.Bold)
                     }
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = { menuOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Меню", "Menu", "菜单", "मेनू"), color = cream) }
+                    OutlinedButton(onClick = { languageOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Язык", "Language", "语言", "भाषा"), color = cream) }
+                    Button(onClick = { chatOpen = true }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = green, contentColor = forest)) { Text(tr("Чат", "Chat", "聊天", "चैट"), fontWeight = FontWeight.Bold) }
+                }
+                Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column {
                         Text("CHESSMIND", color = cream, fontWeight = FontWeight.Bold)
