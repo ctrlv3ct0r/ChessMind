@@ -408,6 +408,12 @@ private fun ChessMindApp(context: Context) {
         }
     }
 
+    LaunchedEffect(menuOpen, fen) {
+        if (!menuOpen && board.sideToMove.toString() == "BLACK" && !board.isMated && !board.isDraw && !thinking) {
+            makeBotMove()
+        }
+    }
+
     val scheme = if (darkTheme) darkColorScheme(primary = green, background = forest, surface = panel, onSurface = cream) else lightColorScheme(primary = Color(0xFF315F3D), background = Color(0xFFF5F3EE), surface = Color.White, onSurface = Color(0xFF18211D), onPrimary = Color.White, onBackground = Color(0xFF18211D))
     MaterialTheme(colorScheme = scheme) {
         Surface(Modifier.fillMaxSize(), color = bgColor) {
@@ -436,29 +442,15 @@ private fun ChessMindApp(context: Context) {
                 }
             } else {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text("CHESSMIND", color = textColor, fontSize = 25.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                        Text(tr("АДАПТИВНЫЙ ШАХМАТНЫЙ ТРЕНЕР", "ADAPTIVE CHESS COACH", "自适应国际象棋教练", "अनुकूली शतरंज कोच"), color = accentColor, fontSize = 9.sp, letterSpacing = 1.1.sp)
-                    }
-                    Surface(color = surfaceColor, shape = RoundedCornerShape(14.dp)) {
-                        Text("♟ ${profile.rating}", Modifier.padding(horizontal = 10.dp, vertical = 9.dp), color = textColor, fontWeight = FontWeight.Bold)
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { menuOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Меню", "Menu", "菜单", "मेनू"), color = textColor, maxLines = 1, softWrap = false, fontSize = 12.sp) }
-                    OutlinedButton(onClick = { languageOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Язык", "Language", "语言", "भाषा"), color = textColor, maxLines = 1, softWrap = false, fontSize = 12.sp) }
-                    Button(onClick = { chatOpen = true }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = accentColor, contentColor = bgColor)) { Text(tr("Чат", "Chat", "聊天", "चैट"), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 12.sp) }
-                }
-                OutlinedButton(onClick = { darkTheme = !darkTheme; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putBoolean("dark_theme", darkTheme).apply() }, modifier = Modifier.fillMaxWidth()) { Text(if (darkTheme) tr("☀ Светлая тема", "☀ Light theme", "☀ 浅色主题", "☀ हल्की थीम") else tr("☾ Тёмная тема", "☾ Dark theme", "☾ 深色主题", "☾ गहरी थीम"), color = textColor, maxLines = 1, softWrap = false) }
-                Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Column {
-                        Text("CHESSMIND", color = textColor, fontWeight = FontWeight.Bold)
-                        Text(tr("Тренер · динамический стиль", "Coach · adaptive style", "教练 · 自适应风格", "कोच · अनुकूली शैली"), color = accentColor, fontSize = 11.sp)
+                    TextButton(onClick = { menuOpen = true }, contentPadding = PaddingValues(horizontal = 4.dp)) { Text("‹", color = accentColor, fontSize = 30.sp, fontWeight = FontWeight.Bold) }
+                    OutlinedButton(onClick = { difficulty = if (difficulty >= 4) 1 else difficulty + 1; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply() }, shape = RoundedCornerShape(14.dp)) {
+                        Text("▥  ${difficultyLabels[difficulty - 1]}  ⌄", color = textColor, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                     }
-                    Text(if (thinking) tr("ДУМАЕТ…", "THINKING…", "思考中…", "सोच रहा है…") else tr("● ОНЛАЙН ЛОКАЛЬНО", "● OFFLINE READY", "● 本地运行", "● ऑफ़लाइन तैयार"), color = if (thinking) Color(0xFFFFC66D) else green, fontSize = 10.sp)
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(tr("ИИ-БОТ", "AI BOT", "AI 机器人", "AI बॉट"), color = textColor, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(if (thinking) tr("Думает…", "Thinking…", "思考中…", "सोच रहा है…") else "♛  ${profile.rating}", color = accentColor, fontSize = 10.sp)
+                    }
                 }
                 Spacer(Modifier.height(8.dp))
                 if (!menuOpen) ChessBoard(fen, selected, legalTargets, lastMove) { selectSquare(it) }
