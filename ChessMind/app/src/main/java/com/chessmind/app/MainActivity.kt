@@ -567,14 +567,7 @@ private fun ChessMindApp(context: Context) {
                     Button(onClick = { analysisText = if (lastHumanBeforeFen != null && lastHumanMove != null) engine.analyzeMove(lastHumanBeforeFen!!, lastHumanMove!!.first, lastHumanMove!!.second, difficulty.coerceAtMost(3)) else tr("Сделай ход, затем нажми «Анализ».", "Make a move, then tap Analysis.", "先走一步，然后点击分析。", "पहले चाल चलें, फिर विश्लेषण दबाएँ।"); analysisOpen = true }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), contentPadding = PaddingValues(horizontal = 3.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF159B61), contentColor = Color.White)) {
                         Text("▥  ${tr("Анализ", "Analyze", "分析", "विश्लेषण")}", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
-                    Button(onClick = {
-                        if (history.isNotEmpty() && !thinking) {
-                            board = Board().apply { loadFromFen(history.last()) }
-                            history = history.dropLast(1)
-                            if (sanHistory.isNotEmpty()) sanHistory = sanHistory.dropLast(1)
-                            refresh(); status = tr("Ход отменён.", "Move undone.", "已撤销一步。", "चाल वापस ली गई।")
-                        }
-                    }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97716), contentColor = Color.White), contentPadding = PaddingValues(horizontal = 3.dp)) {
+                    Button(onClick = { undoTurn() }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97716), contentColor = Color.White), contentPadding = PaddingValues(horizontal = 3.dp)) {
                         Text("↶  ${tr("Отмена", "Undo", "悔棋", "पूर्ववत")}", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
                 }
