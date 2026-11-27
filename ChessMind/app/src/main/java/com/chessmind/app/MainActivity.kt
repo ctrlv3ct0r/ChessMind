@@ -298,9 +298,9 @@ private fun ChessMindApp(context: Context) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column {
                         Text("CHESSMIND", color = cream, fontWeight = FontWeight.Bold)
-                        Text("Тренер · динамический стиль", color = green, fontSize = 11.sp)
+                        Text(tr("Тренер · динамический стиль", "Coach · adaptive style", "教练 · 自适应风格", "कोच · अनुकूली शैली"), color = green, fontSize = 11.sp)
                     }
-                    Text(if (thinking) "ДУМАЕТ…" else "● ОНЛАЙН ЛОКАЛЬНО", color = if (thinking) Color(0xFFFFC66D) else green, fontSize = 10.sp)
+                    Text(if (thinking) tr("ДУМАЕТ…", "THINKING…", "思考中…", "सोच रहा है…") else tr("● ОНЛАЙН ЛОКАЛЬНО", "● OFFLINE READY", "● 本地运行", "● ऑफ़लाइन तैयार"), color = if (thinking) Color(0xFFFFC66D) else green, fontSize = 10.sp)
                 }
                 Spacer(Modifier.height(8.dp))
                 ChessBoard(fen, selected, legalTargets, lastMove) { selectSquare(it) }
@@ -308,14 +308,14 @@ private fun ChessMindApp(context: Context) {
                 Surface(color = panel, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(13.dp)) {
                         Text(status, color = cream, fontWeight = FontWeight.SemiBold)
-                        Text("Профиль: ${styleName(profile)} · цель обучения: следующий уровень", color = green, fontSize = 11.sp)
+                        Text(tr("Профиль: ${styleName(profile)} · цель обучения: следующий уровень", "Profile: ${styleName(profile)} · next learning level", "档案：${styleName(profile)} · 下一学习等级", "प्रोफ़ाइल: ${styleName(profile)} · अगला सीखने का स्तर"), color = green, fontSize = 11.sp)
                     }
                 }
                 Spacer(Modifier.height(10.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatCard("ПАРТИЙ", profile.games.toString(), Modifier.weight(1f))
-                    StatCard("ПОБЕД", profile.wins.toString(), Modifier.weight(1f))
-                    StatCard("УРОВЕНЬ", when {
+                    StatCard(tr("ПАРТИЙ", "GAMES", "对局", "खेल"), profile.games.toString(), Modifier.weight(1f))
+                    StatCard(tr("ПОБЕД", "WINS", "胜利", "जीत"), profile.wins.toString(), Modifier.weight(1f))
+                    StatCard(tr("УРОВЕНЬ", "LEVEL", "等级", "स्तर"), when {
                         profile.rating < 750 -> "Старт"
                         profile.rating < 1000 -> "База"
                         profile.rating < 1300 -> "Рост"
@@ -332,18 +332,18 @@ private fun ChessMindApp(context: Context) {
                             refresh(); status = "Ход отменён."
                         }
                     }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97736), contentColor = Color.White)) {
-                        Text("↶ Отмена", fontWeight = FontWeight.Bold)
+                        Text("↶ ${tr("Отмена", "Undo", "悔棋", "पूर्ववत")}", fontWeight = FontWeight.Bold)
                     }
                     Button(onClick = { reset() }, modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = green, contentColor = forest)) {
-                        Text("Новая партия", fontWeight = FontWeight.Bold)
+                        Text(tr("Новая партия", "New game", "新游戏", "नया खेल"), fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OutlinedButton(onClick = { showHint() }, modifier = Modifier.weight(1f)) { Text("Подсказка", color = green) }
-                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f)) { Text("Чат", color = green) }
-                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f)) { Text("Часы", color = green) }
+                    OutlinedButton(onClick = { showHint() }, modifier = Modifier.weight(1f)) { Text(tr("Подсказка", "Hint", "提示", "संकेत"), color = green) }
+                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Чат", "Chat", "聊天", "चैट"), color = green) }
+                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f)) { Text(tr("Часы", "Clock", "计时", "घड़ी"), color = green) }
                 }
                 if (clockEnabled) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -352,23 +352,23 @@ private fun ChessMindApp(context: Context) {
                         TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = green) }
                     }
                 }
-                Text("ИСТОРИЯ ХОДОВ", Modifier.fillMaxWidth(), color = green, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                Text(if (sanHistory.isEmpty()) "Партия ещё не началась" else sanHistory.takeLast(8).joinToString("   "),
+                Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = green, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(if (sanHistory.isEmpty()) tr("Партия ещё не началась", "Game has not started", "对局尚未开始", "खेल अभी शुरू नहीं हुआ") else sanHistory.takeLast(8).joinToString("   "),
                     Modifier.fillMaxWidth(), color = cream, fontSize = 11.sp)
                 Spacer(Modifier.weight(1f))
-                Text("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", color = green, fontSize = 9.sp, letterSpacing = 0.6.sp)
+                Text(tr("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", "YOUR GOAL IS TO IMPROVE, NOT JUST WIN.", "目标是不断进步，而不只是获胜。", "लक्ष्य बेहतर बनना है, सिर्फ जीतना नहीं।"), color = green, fontSize = 9.sp, letterSpacing = 0.6.sp)
             }
         }
     }
     if (menuOpen) AlertDialog(onDismissRequest = { menuOpen = false },
-        title = { Text("Меню") },
+        title = { Text(tr("Меню", "Menu", "菜单", "मेनू")) },
         text = { Column {
-            TextButton(onClick = { menuOpen = false }) { Text("Продолжить") }
-            TextButton(onClick = { reset(); whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60; menuOpen = false }) { Text("Новая игра") }
-            TextButton(onClick = { menuOpen = false; authorOpen = true }) { Text("Автор") }
-            TextButton(onClick = { menuOpen = false; languageOpen = true }) { Text("Выбор языка") }
+            TextButton(onClick = { menuOpen = false }) { Text(tr("Продолжить", "Continue", "继续", "जारी रखें")) }
+            TextButton(onClick = { reset(); whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60; menuOpen = false }) { Text(tr("Новая игра", "New game", "新游戏", "नया खेल")) }
+            TextButton(onClick = { menuOpen = false; authorOpen = true }) { Text(tr("Автор", "Author", "作者", "लेखक")) }
+            TextButton(onClick = { menuOpen = false; languageOpen = true }) { Text(tr("Выбор языка", "Language", "选择语言", "भाषा")) }
         } },
-        confirmButton = { TextButton(onClick = { menuOpen = false }) { Text("Закрыть") } })
+        confirmButton = { TextButton(onClick = { menuOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें")) } })
     if (languageOpen) AlertDialog(onDismissRequest = { languageOpen = false }, title = { Text("Язык / Language") },
         text = { Column {
             listOf("ru" to "Русский", "en" to "English", "zh" to "中文", "hi" to "हिन्दी").forEach { (code, label) ->
@@ -378,14 +378,14 @@ private fun ChessMindApp(context: Context) {
     if (authorOpen) AlertDialog(onDismissRequest = { authorOpen = false }, title = { Text("ChessMind") },
         text = { Text("Автор проекта: ChessMind. Версия прототипа.") },
         confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK") } })
-    if (hintOpen) AlertDialog(onDismissRequest = { hintOpen = false }, title = { Text("Подсказка тренера") },
+    if (hintOpen) AlertDialog(onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत")) },
         text = { Text(hintText) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK") } })
-    if (chatOpen) AlertDialog(onDismissRequest = { chatOpen = false }, title = { Text("Чат с ChessMind") },
+    if (chatOpen) AlertDialog(onDismissRequest = { chatOpen = false }, title = { Text(tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट")) },
         text = { Column {
             LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = cream, modifier = Modifier.padding(vertical = 4.dp)) } }
-            OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text("Сообщение") })
+            OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश")) })
         } }, confirmButton = { Row {
-            TextButton(onClick = { sendChat() }) { Text("Отправить") }
+            TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें")) }
             TextButton(onClick = { chatOpen = false }) { Text("Закрыть") }
         } })
 }
