@@ -24,6 +24,7 @@ import com.github.bhlangonijr.chesslib.move.Move
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -197,6 +198,18 @@ private fun ChessMindApp(context: Context) {
         if (q.isNotEmpty()) {
             val a = tr("Я локальный шахматный помощник. Пока могу предложить легальный ход и объяснить базовые правила; свободный диалог и глубокий анализ ещё предстоит добавить.", "I’m an offline chess helper. I can suggest a legal move and explain basic rules; free conversation and deep analysis are not implemented yet.", "我是离线国际象棋助手，可以建议合法走法并解释基本规则；自由对话和深度分析尚未实现。", "मैं ऑफ़लाइन शतरंज सहायक हूँ। मैं वैध चाल सुझा सकता हूँ और बुनियादी नियम समझा सकता हूँ।")
             chatMessages = chatMessages + "Вы: $q" + "ChessMind: $a"; chatInput = ""
+        }
+    }
+    LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds) {
+        if (clockEnabled && !board.isMated && !board.isDraw && whiteSeconds > 0 && blackSeconds > 0) {
+            delay(1000)
+            if (board.sideToMove.toString() == "WHITE") {
+                whiteSeconds = (whiteSeconds - 1).coerceAtLeast(0)
+                if (whiteSeconds == 0) status = "Время белых истекло. Партия окончена."
+            } else {
+                blackSeconds = (blackSeconds - 1).coerceAtLeast(0)
+                if (blackSeconds == 0) status = "Время чёрных истекло. Партия окончена."
+            }
         }
     }
 
