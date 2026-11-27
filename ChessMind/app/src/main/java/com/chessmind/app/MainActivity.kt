@@ -499,7 +499,7 @@ private fun ChessMindApp(context: Context) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
                         Text("♟ ${clockText(blackSeconds)}", color = if (board.sideToMove.toString() == "BLACK") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
-                        TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = green) }
+                        TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = accentColor) }
                     }
                 }
                 Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = accentColor, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
