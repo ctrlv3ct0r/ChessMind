@@ -445,7 +445,7 @@ private fun ChessMindApp(context: Context) {
                 lastHumanBeforeFen = before.fen
                 lastHumanMove = from to square
                 history = history + board.fen
-                val notation = "${sanHistory.size / 2 + 1}. [${pieceLabel(before.getPiece(from).toString())}] ${from.name.lowercase()}-${square.name.lowercase()}
+                val notation = "${sanHistory.size / 2 + 1}. [${pieceLabel(before.getPiece(from).toString())}] ${from.name.lowercase()}-${square.name.lowercase()}"
                 board.doMove(move)
                 profile = coach.observeMove(profile, before, move, board)
                 sanHistory = sanHistory + notation
