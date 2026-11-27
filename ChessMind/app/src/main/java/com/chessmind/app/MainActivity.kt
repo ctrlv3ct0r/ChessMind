@@ -455,13 +455,16 @@ private fun ChessMindApp(context: Context) {
             }
         }
     }
-    MaterialTheme(colorScheme = scheme) {\n    if (menuOpen) AlertDialog(onDismissRequest = { menuOpen = false },
+    MaterialTheme(colorScheme = scheme) {
+    if (menuOpen) AlertDialog(onDismissRequest = { menuOpen = false },
         title = { Text(tr("Меню", "Menu", "菜单", "मेनू"), color = textColor) },
         text = { Column {
             TextButton(onClick = { menuOpen = false }) { Text(tr("Продолжить", "Continue", "继续", "जारी रखें"), color = textColor) }
             TextButton(onClick = { reset(); whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60; menuOpen = false }) { Text(tr("Новая игра", "New game", "新游戏", "नया खेल"), color = textColor) }
             TextButton(onClick = { menuOpen = false; authorOpen = true }) { Text(tr("Автор", "Author", "作者", "लेखक"), color = textColor) }
-            TextButton(onClick = { menuOpen = false; languageOpen = true }) { Text(tr("Выбор языка", "Language", "选择语言", "भाषा"), color = textColor) }\n            Text(tr("Сложность бота", "Bot difficulty", "机器人难度", "बॉट कठिनाई"), color = textColor, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))\n            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { difficultyLabels.forEachIndexed { i, label -> TextButton(onClick = { difficulty = i + 1; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply() }, contentPadding = PaddingValues(horizontal = 5.dp)) { Text(label, color = if (difficulty == i + 1) accentColor else textColor, fontSize = 11.sp, maxLines = 1, softWrap = false) } } }
+            TextButton(onClick = { menuOpen = false; languageOpen = true }) { Text(tr("Выбор языка", "Language", "选择语言", "भाषा"), color = textColor) }
+            Text(tr("Сложность бота", "Bot difficulty", "机器人难度", "बॉट कठिनाई"), color = textColor, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { difficultyLabels.forEachIndexed { i, label -> TextButton(onClick = { difficulty = i + 1; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply() }, contentPadding = PaddingValues(horizontal = 5.dp)) { Text(label, color = if (difficulty == i + 1) accentColor else textColor, fontSize = 11.sp, maxLines = 1, softWrap = false) } } }
         } },
         confirmButton = { TextButton(onClick = { menuOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) } })
     if (languageOpen) AlertDialog(onDismissRequest = { languageOpen = false }, title = { Text(tr("Выбор языка", "Choose language", "选择语言", "भाषा चुनें"), color = textColor) },
