@@ -233,16 +233,19 @@ private class AdaptiveEngine(private val coach: AdaptiveCoach) {
 private fun ChessMindApp(context: Context) {
     val coach = remember { AdaptiveCoach(context) }
     val engine = remember { AdaptiveEngine(coach) }
-    var board by remember { mutableStateOf(Board()) }
+    val gamePrefs = remember { context.getSharedPreferences("chessmind_saved_game", Context.MODE_PRIVATE) }
+    val savedFen = remember { gamePrefs.getString("fen", null) }
+    val initialBoard = remember { Board().apply { if (!savedFen.isNullOrBlank()) runCatching { loadFromFen(savedFen) } } }
+    var board by remember { mutableStateOf(initialBoard) }
     var fen by remember { mutableStateOf(board.fen) }
     var selected by remember { mutableStateOf<Square?>(null) }
     var legalTargets by remember { mutableStateOf(emptySet<Square>()) }
-    var history by remember { mutableStateOf(emptyList<String>()) }
-    var sanHistory by remember { mutableStateOf(emptyList<String>()) }
+    var history by remember { mutableStateOf(gamePrefs.getString("history", "")?.split("\n")?.filter { it.isNotBlank() } ?: emptyList()) }
+    var sanHistory by remember { mutableStateOf(gamePrefs.getString("san_history", "")?.split("\n")?.filter { it.isNotBlank() } ?: emptyList()) }
     var profile by remember { mutableStateOf(coach.load()) }
     var thinking by remember { mutableStateOf(false) }
-    var status by remember { mutableStateOf("Твой ход. Начни с белых.") }
-    var lastMove by remember { mutableStateOf<Pair<Square, Square>?>(null) }
+    var status by remember { mutableStateOf(gamePrefs.getString("status", "Твой ход. Начни с белых.") ?: "Твой ход. Начни с белых.") }
+    var lastMove by remember { mutableStateOf(gamePrefs.getString("last_move", null)?.split(",")?.takeIf { it.size == 2 }?.let { runCatching { Square.valueOf(it[0]) to Square.valueOf(it[1]) }.getOrNull() }) }
     var blunders by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     var menuOpen by remember { mutableStateOf(true) }
@@ -252,26 +255,46 @@ private fun ChessMindApp(context: Context) {
     var chatOpen by remember { mutableStateOf(false) }
     var analysisOpen by remember { mutableStateOf(false) }
     var analysisText by remember { mutableStateOf("") }
-    var lastHumanBeforeFen by remember { mutableStateOf<String?>(null) }
-    var lastHumanMove by remember { mutableStateOf<Pair<Square, Square>?>(null) }
+    var lastHumanBeforeFen by remember { mutableStateOf(gamePrefs.getString("last_human_fen", null)) }
+    var lastHumanMove by remember { mutableStateOf(gamePrefs.getString("last_human_move", null)?.split(",")?.takeIf { it.size == 2 }?.let { runCatching { Square.valueOf(it[0]) to Square.valueOf(it[1]) }.getOrNull() }) }
+    var rulesOpen by remember { mutableStateOf(false) }
     var difficulty by remember { mutableIntStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getInt("difficulty", 2).coerceIn(1, 4)) }
     var language by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getString("language", "ru") ?: "ru") }
     var darkTheme by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getBoolean("dark_theme", true)) }
     val bgColor = if (darkTheme) forest else Color(0xFFF5F3EE)
     val surfaceColor = if (darkTheme) panel else Color(0xFFFFFFFF)
-    val textColor = if (darkTheme) cream else Color(0xFF18211D)
-    val accentColor = if (darkTheme) green else Color(0xFF315F3D)
-    var clockEnabled by remember { mutableStateOf(false) }
-    var clockPreset by remember { mutableIntStateOf(5) }
-    var whiteSeconds by remember { mutableIntStateOf(300) }
-    var blackSeconds by remember { mutableIntStateOf(300) }
+    val textColor = if (darkTheme) cream else Color(0xFF101827)
+    val accentColor = if (darkTheme) green else Color(0xFF245C37)
+    val gameTextColor = if (darkTheme) cream else Color(0xFF101827)
+    val gameMutedColor = if (darkTheme) Color(0xFFD8DCE8) else Color(0xFF344054)
+    var clockEnabled by remember { mutableStateOf(gamePrefs.getBoolean("clock_enabled", false)) }
+    var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5)) }
+    var whiteSeconds by remember { mutableIntStateOf(gamePrefs.getInt("white_seconds", 300)) }
+    var blackSeconds by remember { mutableIntStateOf(gamePrefs.getInt("black_seconds", 300)) }
     var chatInput by remember { mutableStateOf("") }
     var chatMessages by remember { mutableStateOf(listOf("ChessMind: Привет! Спроси меня о шахматах.")) }
     var hintText by remember { mutableStateOf("") }
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
     val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
     LaunchedEffect(language) {
-        if (sanHistory.isEmpty()) status = tr("Твой ход. Начни с белых.", "Your move. Start as White.", "轮到你了。白方先行。", "आपकी चाल। सफेद से शुरू करें।")
+        if (sanHistory.isEmpty() && fen == Board().fen) status = tr("Твой ход. Начни с белых.", "Your move. Start as White.", "轮到你了。白方先行。", "आपकी चाल। सफेद से शुरू करें।")
+    }
+    LaunchedEffect(fen, history, sanHistory, status, lastMove, lastHumanBeforeFen, lastHumanMove, clockEnabled, clockPreset, whiteSeconds, blackSeconds, blunders) {
+        gamePrefs.edit()
+            .putString("fen", fen)
+            .putString("history", history.joinToString("\n"))
+            .putString("san_history", sanHistory.joinToString("\n"))
+            .putString("status", status)
+            .putString("last_move", lastMove?.let { "${it.first.name},${it.second.name}" })
+            .putString("last_human_fen", lastHumanBeforeFen)
+            .putString("last_human_move", lastHumanMove?.let { "${it.first.name},${it.second.name}" })
+            .putBoolean("clock_enabled", clockEnabled)
+            .putInt("clock_preset", clockPreset)
+            .putInt("white_seconds", whiteSeconds)
+            .putInt("black_seconds", blackSeconds)
+            .putInt("blunders", blunders)
+            .putBoolean("has_saved_game", history.isNotEmpty() || fen != Board().fen)
+            .apply()
     }
     fun clockText(s: Int) = "%02d:%02d".format(s / 60, s % 60)
     fun showHint() {
@@ -318,7 +341,10 @@ private fun ChessMindApp(context: Context) {
     fun reset() {
         board = Board(); refresh(); selected = null; legalTargets = emptySet()
         history = emptyList(); sanHistory = emptyList(); lastMove = null
-        thinking = false; blunders = 0; status = tr("Новая партия. Твой ход.", "New game. Your move.", "新游戏。轮到你了。", "नया खेल। आपकी चाल।")
+        lastHumanBeforeFen = null; lastHumanMove = null
+        thinking = false; blunders = 0; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60
+        status = tr("Новая партия. Твой ход.", "New game. Your move.", "新游戏。轮到你了。", "नया खेल। आपकी चाल।")
+        gamePrefs.edit().clear().apply()
     }
     fun makeBotMove() {
         if (board.isMated || board.isDraw) return
@@ -439,7 +465,7 @@ private fun ChessMindApp(context: Context) {
                 Spacer(Modifier.height(12.dp))
                 Surface(color = panel, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(13.dp)) {
-                        Text(status, color = cream, fontWeight = FontWeight.SemiBold)
+                        Text(status, color = gameTextColor, fontWeight = FontWeight.SemiBold)
                         Text(tr("Профиль: ${styleName(profile)} · сложность $difficulty/4", "Profile: ${styleName(profile)} · difficulty $difficulty/4", "档案：${styleName(profile)} · 难度 $difficulty/4", "प्रोफ़ाइल: ${styleName(profile)} · कठिनाई $difficulty/4"), color = accentColor, fontSize = 11.sp)
                     }
                 }
@@ -486,7 +512,7 @@ private fun ChessMindApp(context: Context) {
                 }
                 Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = accentColor, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Text(if (sanHistory.isEmpty()) tr("Партия ещё не началась", "Game has not started", "对局尚未开始", "खेल अभी शुरू नहीं हुआ") else sanHistory.takeLast(8).joinToString("   "),
-                    Modifier.fillMaxWidth(), color = cream, fontSize = 11.sp)
+                    Modifier.fillMaxWidth(), color = gameMutedColor, fontSize = 11.sp)
                 Text(tr("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", "YOUR GOAL IS TO IMPROVE, NOT JUST WIN.", "目标是不断进步，而不只是获胜。", "लक्ष्य बेहतर बनना है, सिर्फ जीतना नहीं।"), color = green, fontSize = 9.sp, letterSpacing = 0.6.sp)
             }
             }
