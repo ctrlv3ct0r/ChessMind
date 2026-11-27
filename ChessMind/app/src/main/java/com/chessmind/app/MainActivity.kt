@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -172,12 +173,12 @@ private fun ChessMindApp(context: Context) {
     var lastMove by remember { mutableStateOf<Pair<Square, Square>?>(null) }
     var blunders by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
-    var menuOpen by remember { mutableStateOf(false) }
+    var menuOpen by remember { mutableStateOf(true) }
     var languageOpen by remember { mutableStateOf(false) }
     var hintOpen by remember { mutableStateOf(false) }
     var authorOpen by remember { mutableStateOf(false) }
     var chatOpen by remember { mutableStateOf(false) }
-    var language by remember { mutableStateOf("ru") }
+    var language by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getString("language", "ru") ?: "ru") }
     var clockEnabled by remember { mutableStateOf(false) }
     var clockPreset by remember { mutableIntStateOf(5) }
     var whiteSeconds by remember { mutableIntStateOf(300) }
@@ -218,11 +219,11 @@ private fun ChessMindApp(context: Context) {
     fun reset() {
         board = Board(); refresh(); selected = null; legalTargets = emptySet()
         history = emptyList(); sanHistory = emptyList(); lastMove = null
-        thinking = false; blunders = 0; status = "Новая партия. Твой ход."
+        thinking = false; blunders = 0; status = tr("Новая партия. Твой ход.", "New game. Your move.", "新游戏。轮到你了。", "नया खेल। आपकी चाल।")
     }
     fun makeBotMove() {
         if (board.isMated || board.isDraw) return
-        thinking = true; status = "ChessMind думает…"
+        thinking = true; status = tr("ChessMind думает…", "ChessMind is thinking…", "ChessMind 正在思考…", "ChessMind सोच रहा है…")
         val snapshot = board.fen
         scope.launch {
             val chosen = withContext(Dispatchers.Default) {
@@ -236,9 +237,9 @@ private fun ChessMindApp(context: Context) {
             sanHistory = sanHistory + "${sanHistory.size / 2 + 1}… ${from.name.lowercase()}${to.name.lowercase()}"
             refresh(); thinking = false; selected = null; legalTargets = emptySet()
             status = when {
-                board.isMated -> "Мат. Ты выиграл!"
-                board.isDraw -> "Ничья."
-                else -> "Твой ход. Посмотри, что изменилось."
+                board.isMated -> tr("Мат. Ты выиграл!", "Checkmate. You win!", "将死。你赢了！", "शह-मात। आप जीत गए!")
+                board.isDraw -> tr("Ничья.", "Draw.", "和棋。", "ड्रॉ।")
+                else -> tr("Твой ход. Посмотри, что изменилось.", "Your move. Look at what changed.", "轮到你了。看看局面变化。", "आपकी चाल। देखें क्या बदला।")
             }
         }
     }
@@ -263,10 +264,10 @@ private fun ChessMindApp(context: Context) {
                 lastMove = from to square
                 refresh(); selected = null; legalTargets = emptySet()
                 if (board.isMated) {
-                    status = "Мат! Ты выиграл."
+                    status = tr("Мат! Ты выиграл.", "Checkmate! You win.", "将死！你赢了。", "शह-मात! आप जीत गए।")
                     profile = coach.finish(profile, true, blunders)
                 } else if (board.isDraw) {
-                    status = "Ничья."
+                    status = tr("Ничья.", "Draw.", "和棋。", "ड्रॉ।")
                     profile = coach.finish(profile, false, blunders)
                 } else makeBotMove()
             } else {
@@ -281,15 +282,16 @@ private fun ChessMindApp(context: Context) {
 
     MaterialTheme(colorScheme = darkColorScheme(primary = green, background = forest, surface = panel, onSurface = cream)) {
         Surface(Modifier.fillMaxSize(), color = forest) {
-            Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Column {
                         Text("CHESSMIND", color = cream, fontSize = 25.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                        Text("АДАПТИВНЫЙ ШАХМАТНЫЙ ТРЕНЕР", color = green, fontSize = 9.sp, letterSpacing = 1.5.sp)
+                        Text(tr("АДАПТИВНЫЙ ШАХМАТНЫЙ ТРЕНЕР", "ADAPTIVE CHESS COACH", "自适应国际象棋教练", "अनुकूली शतरंज कोच"), color = green, fontSize = 9.sp, letterSpacing = 1.1.sp)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         TextButton(onClick = { languageOpen = true }) { Text(language.uppercase(), color = green) }
                         TextButton(onClick = { menuOpen = true }) { Text("☰", color = cream, fontSize = 20.sp) }
+                        TextButton(onClick = { chatOpen = true }) { Text(tr("Чат", "Chat", "聊天", "चैट"), color = cream, fontWeight = FontWeight.Bold) }
                         Surface(color = panel, shape = RoundedCornerShape(14.dp)) {
                             Text("♟ ${profile.rating}", Modifier.padding(horizontal = 10.dp, vertical = 9.dp), color = cream, fontWeight = FontWeight.Bold)
                         }
@@ -330,7 +332,7 @@ private fun ChessMindApp(context: Context) {
                             board = Board().apply { loadFromFen(history.last()) }
                             history = history.dropLast(1)
                             if (sanHistory.isNotEmpty()) sanHistory = sanHistory.dropLast(1)
-                            refresh(); status = "Ход отменён."
+                            refresh(); status = tr("Ход отменён.", "Move undone.", "已撤销一步。", "चाल वापस ली गई।")
                         }
                     }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97736), contentColor = Color.White)) {
                         Text("↶ ${tr("Отмена", "Undo", "悔棋", "पूर्ववत")}", fontWeight = FontWeight.Bold)
@@ -343,7 +345,7 @@ private fun ChessMindApp(context: Context) {
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     OutlinedButton(onClick = { showHint() }, modifier = Modifier.weight(1f)) { Text(tr("Подсказка", "Hint", "提示", "संकेत"), color = green) }
-                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Чат", "Chat", "聊天", "चैट"), color = green) }
+                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Открыть чат", "Open chat", "打开聊天", "चैट खोलें"), color = green) }
                     OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f)) { Text(tr("Часы", "Clock", "计时", "घड़ी"), color = green) }
                 }
                 if (clockEnabled) {
@@ -356,7 +358,6 @@ private fun ChessMindApp(context: Context) {
                 Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = green, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Text(if (sanHistory.isEmpty()) tr("Партия ещё не началась", "Game has not started", "对局尚未开始", "खेल अभी शुरू नहीं हुआ") else sanHistory.takeLast(8).joinToString("   "),
                     Modifier.fillMaxWidth(), color = cream, fontSize = 11.sp)
-                Spacer(Modifier.weight(1f))
                 Text(tr("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", "YOUR GOAL IS TO IMPROVE, NOT JUST WIN.", "目标是不断进步，而不只是获胜。", "लक्ष्य बेहतर बनना है, सिर्फ जीतना नहीं।"), color = green, fontSize = 9.sp, letterSpacing = 0.6.sp)
             }
         }
@@ -370,14 +371,14 @@ private fun ChessMindApp(context: Context) {
             TextButton(onClick = { menuOpen = false; languageOpen = true }) { Text(tr("Выбор языка", "Language", "选择语言", "भाषा")) }
         } },
         confirmButton = { TextButton(onClick = { menuOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें")) } })
-    if (languageOpen) AlertDialog(onDismissRequest = { languageOpen = false }, title = { Text("Язык / Language") },
+    if (languageOpen) AlertDialog(onDismissRequest = { languageOpen = false }, title = { Text(tr("Выбор языка", "Choose language", "选择语言", "भाषा चुनें")) },
         text = { Column {
             listOf("ru" to "Русский", "en" to "English", "zh" to "中文", "hi" to "हिन्दी").forEach { (code, label) ->
-                TextButton(onClick = { language = code; languageOpen = false }) { Text(label, color = if (language == code) green else cream) }
+                TextButton(onClick = { language = code; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putString("language", code).apply(); languageOpen = false }) { Text(label, color = if (language == code) green else cream) }
             }
         } }, confirmButton = { TextButton(onClick = { languageOpen = false }) { Text("OK") } })
     if (authorOpen) AlertDialog(onDismissRequest = { authorOpen = false }, title = { Text("ChessMind") },
-        text = { Text("Автор проекта: ChessMind. Версия прототипа.") },
+        text = { Text(tr("Автор проекта: ChessMind. Версия прототипа.", "Project author: ChessMind. Prototype version.", "项目作者：ChessMind。原型版本。", "परियोजना लेखक: ChessMind। प्रोटोटाइप संस्करण।")) },
         confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK") } })
     if (hintOpen) AlertDialog(onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत")) },
         text = { Text(hintText) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK") } })
@@ -387,7 +388,7 @@ private fun ChessMindApp(context: Context) {
             OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश")) })
         } }, confirmButton = { Row {
             TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें")) }
-            TextButton(onClick = { chatOpen = false }) { Text("Закрыть") }
+            TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें")) }
         } })
 }
 
