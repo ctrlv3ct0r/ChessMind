@@ -200,7 +200,6 @@ private class AdaptiveEngine(private val coach: AdaptiveCoach) {
                             (if ((white && row < 7) || (!white && row > 0)) 12.0 else 0.0)
                         'r' -> (if (if (white) row == 1 else row == 6) 14.0 else 0.0)
                         'q' -> if (fullMove <= 10 && (if (white) row != 7 || file != 3 else row != 0 || file != 3)) -18.0 else 0.0
-                        'k' -> if (fullMove <= 12 && (if (white) row == 7 && file in 2..6 else row == 0 && file in 2..6)) -10.0 else 0.0
                         else -> 0.0
                     }
                     whiteScore += sign * ((values[type] ?: 0).toDouble() + positional)
@@ -209,11 +208,21 @@ private class AdaptiveEngine(private val coach: AdaptiveCoach) {
             }
         }
 
-        // Reward castling: king on c/g-file and rook beside it is a useful king-safety signal.
-        val squares = placement
-        if (squares.size == 8) {
-            if (squares[7].contains('K') && (squares[7].indexOf('K') == 2 || squares[7].indexOf('K') == 6)) whiteScore += 28.0
-            if (squares[0].contains('k') && (squares[0].indexOf('k') == 2 || squares[0].indexOf('k') == 6)) whiteScore -= 28.0
+        // Reward castling only when the king is actually on c- or g-file.
+        fun kingFile(rank: String, king: Char): Int? {
+            var file = 0
+            for (ch in rank) {
+                if (ch.isDigit()) file += ch.digitToInt()
+                else {
+                    if (ch == king) return file
+                    file++
+                }
+            }
+            return null
+        }
+        if (placement.size == 8) {
+            if (kingFile(placement[7], 'K') in setOf(2, 6)) whiteScore += 28.0
+            if (kingFile(placement[0], 'k') in setOf(2, 6)) whiteScore -= 28.0
         }
 
         return if (board.sideToMove.toString() == "WHITE") whiteScore else -whiteScore
