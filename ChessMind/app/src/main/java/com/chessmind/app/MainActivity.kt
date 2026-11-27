@@ -188,8 +188,9 @@ private fun ChessMindApp(context: Context) {
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
     fun clockText(s: Int) = "%02d:%02d".format(s / 60, s % 60)
     fun showHint() {
-        val legal = Board().apply { loadFromFen(board.fen) }.legalMoves()
-        val m = legal.firstOrNull()
+        val position = Board().apply { loadFromFen(board.fen) }
+        val legal = position.legalMoves()
+        val m = if (legal.isEmpty()) null else engine.choose(position, profile)
         hintText = if (m == null) tr("Нет доступных ходов.", "No legal moves.", "没有合法走法。", "कोई वैध चाल नहीं।") else tr("Попробуй ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. Это простой ориентир, не глубокий анализ.", "Try ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. This is a simple suggestion, not deep analysis.", "试试 ${m.from.name.lowercase()} → ${m.to.name.lowercase()}。这是简单建议，并非深度分析。", "${m.from.name.lowercase()} → ${m.to.name.lowercase()} आज़माएँ। यह सरल सुझाव है।")
         hintOpen = true
     }
