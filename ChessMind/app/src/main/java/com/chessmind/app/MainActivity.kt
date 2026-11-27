@@ -333,44 +333,7 @@ private fun ChessMindApp(context: Context) {
         lastHumanMove = null
         selected = null
         legalTargets = emptySet()
-        refresh()
-        status = "Ход отменён. Твой ход."
-    }
-    fun buildGameAnalysis(): String {
-        if (sanHistory.isEmpty()) return "Партия не содержит ходов для анализа."
-        return sanHistory.mapIndexed { index, notation ->
-            val coords = Regex("([a-h][1-8])-([a-h][1-8])").find(notation)
-            val beforeFen = history.getOrNull(index)
-            if (coords == null || beforeFen == null) "$notation — ход записан"
-            else {
-                val from = Square.valueOf(coords.groupValues[1].uppercase())
-                val to = Square.valueOf(coords.groupValues[2].uppercase())
-                val quality = runCatching { engine.analyzeMove(beforeFen, from, to, 1).lineSequence().firstOrNull().orEmpty() }.getOrDefault("")
-                "$notation — $quality"
-            }
-        }.joinToString("\n")
-    }
-    fun finishGame(winner: String?, humanWon: Boolean) {
-        status = if (winner == null) "Ничья." else "$winner выиграли!"
-        profile = coach.finish(profile, humanWon, blunders)
-        analysisText = buildGameAnalysis()
-        analysisOpen = true
-    }
-    fun undoTurn() {
-        botTurnToken++
-        thinking = false
-        if (history.isEmpty()) { status = "Пока нечего отменять."; return }
-        val count = if (board.sideToMove.toString() == "WHITE" && history.size >= 2) 2 else 1
-        val targetIndex = (history.size - count).coerceAtLeast(0)
-        board = Board().apply { loadFromFen(history[targetIndex]) }
-        history = history.dropLast(minOf(count, history.size))
-        sanHistory = sanHistory.dropLast(minOf(count, sanHistory.size))
-        lastMove = null
-        lastHumanBeforeFen = null
-        lastHumanMove = null
-        selected = null
-        legalTargets = emptySet()
-        refresh()
+        fen = board.fen
         status = "Ход отменён. Твой ход."
     }
     fun showHint() {
