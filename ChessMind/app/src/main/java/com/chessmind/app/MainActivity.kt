@@ -37,8 +37,8 @@ private val forest = Color(0xFF080B18)
 private val panel = Color(0xFF171D30)
 private val cream = Color(0xFFF7F3EA)
 private val green = Color(0xFFFFC84A)
-private val darkSquare = Color(0xFF9A552F)
-private val lightSquare = Color(0xFFECC17B)
+private val darkSquare = Color(0xFFA95E35)
+private val lightSquare = Color(0xFFF4D18A)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -580,7 +580,7 @@ private fun StatCard(label: String, value: String, modifier: Modifier = Modifier
 @Composable
 private fun ChessBoard(fen: String, selected: Square?, targets: Set<Square>, lastMove: Pair<Square, Square>?, onTap: (Square) -> Unit) {
     val squares = remember(fen) { parseFenBoard(fen) }
-    Column(Modifier.fillMaxWidth().widthIn(max = 440.dp).aspectRatio(1f).padding(2.dp)) {
+    Column(Modifier.fillMaxWidth().widthIn(max = 440.dp).aspectRatio(1f).background(Color(0xFFD5A64A), RoundedCornerShape(8.dp)).padding(3.dp)) {
         for (row in 0..7) {
             Row(Modifier.weight(1f)) {
                 for (col in 0..7) {
