@@ -403,7 +403,7 @@ private fun ChessMindApp(context: Context) {
             chatInput = ""
         }
     }
-    LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds) {
+    LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds, menuOpen) {
         if (clockEnabled && !board.isMated && !board.isDraw && whiteSeconds > 0 && blackSeconds > 0) {
             delay(1000)
             if (board.sideToMove.toString() == "WHITE") {
@@ -539,7 +539,7 @@ private fun ChessMindApp(context: Context) {
                             Text("♟  ${clockText(blackSeconds)}", Modifier.padding(vertical = 12.dp), color = Color(0xFFF7F3EA), fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
-                    TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("◷  ${clockPreset}+0", color = accentColor) }
+                    TextButton(onClick = { clockSettingsOpen = true }) { Text("◷  ${clockPreset} мин", color = accentColor) }
                 }
                 Spacer(Modifier.height(8.dp))
                 Surface(color = if (darkTheme) panel else Color(0xFFE8EDF3), shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
@@ -584,7 +584,7 @@ private fun ChessMindApp(context: Context) {
                     OutlinedButton(onClick = { reset() }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
                         Text("＋  ${tr("Новая партия", "New game", "新对局", "नया खेल")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
-                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                    OutlinedButton(onClick = { clockSettingsOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
                         Text("◷  ${tr("Часы", "Clock", "计时", "घड़ी")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
                 }
@@ -613,6 +613,47 @@ private fun ChessMindApp(context: Context) {
             }
         },
         confirmButton = { TextButton(onClick = { rulesOpen = false }) { Text(tr("Понятно", "Got it", "知道了", "समझ गया"), color = dialogAccentColor) } }
+    )
+    if (difficultyOpen) AlertDialog(
+        containerColor = Color(0xFF111827), shape = RoundedCornerShape(24.dp),
+        onDismissRequest = { difficultyOpen = false },
+        title = { Text(tr("Сложность бота", "Bot difficulty", "机器人难度", "बॉट कठिनाई"), color = dialogTextColor) },
+        text = { Column {
+            difficultyLabels.forEachIndexed { index, label ->
+                TextButton(onClick = {
+                    difficulty = index + 1
+                    context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply()
+                    difficultyOpen = false
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (difficulty == index + 1) "●  $label" else "○  $label", color = if (difficulty == index + 1) dialogAccentColor else dialogTextColor)
+                }
+            }
+        } },
+        confirmButton = { TextButton(onClick = { difficultyOpen = false }) { Text("OK", color = dialogAccentColor) } }
+    )
+    if (clockSettingsOpen) AlertDialog(
+        containerColor = Color(0xFF111827), shape = RoundedCornerShape(24.dp),
+        onDismissRequest = { clockSettingsOpen = false },
+        title = { Text("Шахматные часы", color = dialogTextColor) },
+        text = { Column {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(if (clockEnabled) "Часы включены" else "Часы выключены", color = dialogTextColor)
+                Switch(checked = clockEnabled, onCheckedChange = { clockEnabled = it })
+            }
+            Text("Время на партию для каждого игрока", color = dialogTextColor, fontWeight = FontWeight.SemiBold)
+            listOf(1, 3, 5, 10, 15, 30, 60).forEach { minutes ->
+                TextButton(onClick = {
+                    clockPreset = minutes
+                    whiteSeconds = minutes * 60
+                    blackSeconds = minutes * 60
+                    clockEnabled = true
+                    clockSettingsOpen = false
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (clockPreset == minutes) "●  $minutes минут" else "○  $minutes минут", color = if (clockPreset == minutes) dialogAccentColor else dialogTextColor)
+                }
+            }
+        } },
+        confirmButton = { TextButton(onClick = { clockSettingsOpen = false }) { Text("Готово", color = dialogAccentColor) } }
     )
     if (languageOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { languageOpen = false }, title = { Text(tr("Выбор языка", "Choose language", "选择语言", "भाषा चुनें"), color = dialogTextColor) },
         text = { Column {
