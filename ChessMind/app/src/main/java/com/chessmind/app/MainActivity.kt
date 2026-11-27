@@ -199,7 +199,7 @@ private fun ChessMindApp(context: Context) {
         val q = chatInput.trim()
         if (q.isNotEmpty()) {
             val a = tr("Я локальный шахматный помощник. Пока могу предложить легальный ход и объяснить базовые правила; свободный диалог и глубокий анализ ещё предстоит добавить.", "I’m an offline chess helper. I can suggest a legal move and explain basic rules; free conversation and deep analysis are not implemented yet.", "我是离线国际象棋助手，可以建议合法走法并解释基本规则；自由对话和深度分析尚未实现。", "मैं ऑफ़लाइन शतरंज सहायक हूँ। मैं वैध चाल सुझा सकता हूँ और बुनियादी नियम समझा सकता हूँ।")
-            chatMessages = chatMessages + "Вы: $q" + "ChessMind: $a"; chatInput = ""
+            chatMessages = chatMessages + tr("Вы: $q", "You: $q", "你：$q", "आप: $q") + "ChessMind: $a"; chatInput = ""
         }
     }
     LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds) {
@@ -207,10 +207,10 @@ private fun ChessMindApp(context: Context) {
             delay(1000)
             if (board.sideToMove.toString() == "WHITE") {
                 whiteSeconds = (whiteSeconds - 1).coerceAtLeast(0)
-                if (whiteSeconds == 0) status = "Время белых истекло. Партия окончена."
+                if (whiteSeconds == 0) status = tr("Время белых истекло. Партия окончена.", "White ran out of time. Game over.", "白方超时。对局结束。", "सफेद का समय समाप्त। खेल खत्म।")
             } else {
                 blackSeconds = (blackSeconds - 1).coerceAtLeast(0)
-                if (blackSeconds == 0) status = "Время чёрных истекло. Партия окончена."
+                if (blackSeconds == 0) status = tr("Время чёрных истекло. Партия окончена.", "Black ran out of time. Game over.", "黑方超时。对局结束。", "काले का समय समाप्त। खेल खत्म।")
             }
         }
     }
@@ -319,10 +319,10 @@ private fun ChessMindApp(context: Context) {
                     StatCard(tr("ПАРТИЙ", "GAMES", "对局", "खेल"), profile.games.toString(), Modifier.weight(1f))
                     StatCard(tr("ПОБЕД", "WINS", "胜利", "जीत"), profile.wins.toString(), Modifier.weight(1f))
                     StatCard(tr("УРОВЕНЬ", "LEVEL", "等级", "स्तर"), when {
-                        profile.rating < 750 -> "Старт"
-                        profile.rating < 1000 -> "База"
-                        profile.rating < 1300 -> "Рост"
-                        else -> "Сильный"
+                        profile.rating < 750 -> tr("Старт", "Beginner", "入门", "शुरुआती")
+                        profile.rating < 1000 -> tr("База", "Basic", "基础", "बुनियादी")
+                        profile.rating < 1300 -> tr("Рост", "Improving", "进阶", "प्रगति")
+                        else -> tr("Сильный", "Advanced", "高级", "उन्नत")
                     }, Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(10.dp))
@@ -411,7 +411,7 @@ private fun StatCard(label: String, value: String, modifier: Modifier = Modifier
 @Composable
 private fun ChessBoard(fen: String, selected: Square?, targets: Set<Square>, lastMove: Pair<Square, Square>?, onTap: (Square) -> Unit) {
     val squares = remember(fen) { parseFenBoard(fen) }
-    Column(Modifier.fillMaxWidth().aspectRatio(1f).padding(2.dp)) {
+    Column(Modifier.fillMaxWidth().widthIn(max = 440.dp).aspectRatio(1f).padding(2.dp)) {
         for (row in 0..7) {
             Row(Modifier.weight(1f)) {
                 for (col in 0..7) {
