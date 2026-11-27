@@ -267,7 +267,6 @@ private fun ChessMindApp(context: Context) {
     var hintText by remember { mutableStateOf("") }
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
     val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
-    val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
     LaunchedEffect(language) {
         if (sanHistory.isEmpty()) status = tr("Твой ход. Начни с белых.", "Your move. Start as White.", "轮到你了。白方先行。", "आपकी चाल। सफेद से शुरू करें।")
     }
@@ -354,6 +353,8 @@ private fun ChessMindApp(context: Context) {
             val move = board.legalMoves().firstOrNull { it.from == from && it.to == square }
             if (move != null) {
                 val before = Board().apply { loadFromFen(board.fen) }
+                lastHumanBeforeFen = before.fen
+                lastHumanMove = from to square
                 history = history + board.fen
                 val notation = "${sanHistory.size / 2 + 1}. ${from.name.lowercase()}${square.name.lowercase()}"
                 board.doMove(move)
