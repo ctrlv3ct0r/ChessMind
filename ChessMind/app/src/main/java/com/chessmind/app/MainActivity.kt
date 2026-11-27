@@ -319,7 +319,7 @@ private fun ChessMindApp(context: Context) {
         scope.launch {
             val chosen = withContext(Dispatchers.Default) {
                 val copy = Board().apply { loadFromFen(snapshot) }
-                engine.choose(copy, profile)
+                engine.bestMove(copy, difficulty) ?: return@withContext null
             }
             history = history + board.fen
             val from = chosen.from; val to = chosen.to
