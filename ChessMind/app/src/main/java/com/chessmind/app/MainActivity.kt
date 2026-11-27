@@ -252,7 +252,6 @@ private fun ChessMindApp(context: Context) {
     var languageOpen by remember { mutableStateOf(false) }
     var hintOpen by remember { mutableStateOf(false) }
     var authorOpen by remember { mutableStateOf(false) }
-    var chatOpen by remember { mutableStateOf(false) }
     var analysisOpen by remember { mutableStateOf(false) }
     var analysisText by remember { mutableStateOf("") }
     var lastHumanBeforeFen by remember { mutableStateOf(gamePrefs.getString("last_human_fen", null)) }
@@ -273,8 +272,6 @@ private fun ChessMindApp(context: Context) {
     var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5)) }
     var whiteSeconds by remember { mutableIntStateOf(gamePrefs.getInt("white_seconds", 300)) }
     var blackSeconds by remember { mutableIntStateOf(gamePrefs.getInt("black_seconds", 300)) }
-    var chatInput by remember { mutableStateOf("") }
-    var chatMessages by remember { mutableStateOf(listOf("ChessMind: Привет! Спроси меня о шахматах.")) }
     var hintText by remember { mutableStateOf("") }
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
     val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
@@ -342,26 +339,6 @@ private fun ChessMindApp(context: Context) {
         val m = if (legal.isEmpty()) null else engine.bestMove(position, 3)
         hintText = if (m == null) tr("Нет доступных ходов.", "No legal moves.", "没有合法走法。", "कोई वैध चाल नहीं।") else tr("Попробуй ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. Это простой ориентир, не глубокий анализ.", "Try ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. This is a simple suggestion, not deep analysis.", "试试 ${m.from.name.lowercase()} → ${m.to.name.lowercase()}。这是简单建议，并非深度分析。", "${m.from.name.lowercase()} → ${m.to.name.lowercase()} आज़माएँ। यह सरल सुझाव है।")
         hintOpen = true
-    }
-    fun sendChat() {
-        val q = chatInput.trim()
-        if (q.isNotEmpty()) {
-            val pos = Board().apply { loadFromFen(board.fen) }
-            val legalCount = pos.legalMoves().size
-            val side = if (pos.sideToMove.toString() == "WHITE") tr("белых", "White", "白方", "सफेद") else tr("чёрных", "Black", "黑方", "काले")
-            val a = when {
-                q.contains("подсказ", true) || q.contains("hint", true) || q.contains("ход", true) || q.contains("move", true) -> {
-                    val best = if (legalCount > 0) engine.bestMove(pos, 3) else null
-                    if (best == null) tr("В этой позиции ходов нет: партия завершена.", "There are no legal moves: the game is over.", "当前没有合法走法：对局已结束。", "कोई वैध चाल नहीं: खेल समाप्त हो गया है।")
-                    else tr("Попробуй ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. Это рекомендация встроенного эвристического движка, а не экспертный анализ.", "Try ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. This is a recommendation from the built-in heuristic engine, not expert analysis.", "可以尝试 ${best.from.name.lowercase()} → ${best.to.name.lowercase()}。这是内置启发式引擎的建议，并非专家级分析。", "${best.from.name.lowercase()} → ${best.to.name.lowercase()} आज़माएँ। यह अंतर्निहित इंजन का सुझाव है।")
-                }
-                q.contains("позици", true) || q.contains("position", true) || q.contains("сейчас", true) -> tr("Сейчас ход ${side}. Доступно легальных ходов: $legalCount. Я могу предложить вариант по запросу «подскажи ход».", "It is ${side} to move. Legal moves available: $legalCount. Ask me to suggest a move for a candidate.", "现在轮到${side}。可用合法走法：$legalCount。你可以让我推荐一步。", "अब ${side} की चाल है। वैध चालें: $legalCount। सुझाव के लिए मुझसे चाल पूछें।")
-                q.contains("правил", true) || q.contains("rule", true) -> tr("Цель — поставить мат королю соперника. Шах означает нападение на короля; из-под шаха нужно обязательно выйти.", "The goal is to checkmate the opponent’s king. Check means the king is under attack and must be protected.", "目标是将死对方的王。将军表示王受到攻击，必须应将。", "लक्ष्य प्रतिद्वंद्वी के राजा को शह-मात देना है। शह में राजा पर हमला होता है और उससे बचना अनिवार्य है।")
-                else -> tr("Я могу оценить текущую позицию, подсказать ход или объяснить базовые правила. Спроси, например: «Что сейчас происходит?» или «Подскажи ход».", "I can describe the current position, suggest a move, or explain basic rules. Try: “What is happening?” or “Suggest a move.”", "我可以介绍当前局面、推荐走法或解释基本规则。可以问：“现在局面如何？”或“推荐一步棋”。", "मैं वर्तमान स्थिति समझा सकता हूँ, चाल सुझा सकता हूँ या बुनियादी नियम बता सकता हूँ। पूछें: “अभी स्थिति क्या है?”")
-            }
-            chatMessages = chatMessages + tr("Вы: $q", "You: $q", "你：$q", "आप: $q") + "ChessMind: $a"
-            chatInput = ""
-        }
     }
     LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds) {
         if (clockEnabled && !board.isMated && !board.isDraw && whiteSeconds > 0 && blackSeconds > 0) {
@@ -471,8 +448,6 @@ private fun ChessMindApp(context: Context) {
                     Spacer(Modifier.height(9.dp))
                     OutlinedButton(onClick = { rulesOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("♟  ${tr("Правила игры", "How to play", "游戏规则", "खेल के नियम")}", color = cream, maxLines = 1, softWrap = false) }
                     Spacer(Modifier.height(9.dp))
-                    OutlinedButton(onClick = { menuOpen = false; chatOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("💬  ${tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट")}", color = cream, maxLines = 1, softWrap = false) }
-                    Spacer(Modifier.height(9.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { languageOpen = true }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text("◎  ${tr("Язык", "Language", "语言", "भाषा")}", color = cream, maxLines = 1, softWrap = false) }
                         OutlinedButton(onClick = { darkTheme = !darkTheme; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putBoolean("dark_theme", darkTheme).apply() }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text(if (darkTheme) "☀  ${tr("Светлая", "Light", "浅色", "हल्की")}" else "☾  ${tr("Тёмная", "Dark", "深色", "गहरी")}", color = cream, maxLines = 1, softWrap = false) }
@@ -503,7 +478,7 @@ private fun ChessMindApp(context: Context) {
                             Text("♟  ${clockText(blackSeconds)}", Modifier.padding(vertical = 12.dp), color = Color(0xFFF7F3EA), fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
-                    TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("◷  ${clockPreset}+0", color = accentColor) }
+                    TextButton(onClick = { clockSettingsOpen = true }) { Text("◷  ${clockPreset} мин", color = accentColor) }
                 }
                 Spacer(Modifier.height(8.dp))
                 Surface(color = if (darkTheme) panel else Color(0xFFE8EDF3), shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
@@ -544,13 +519,13 @@ private fun ChessMindApp(context: Context) {
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
-                        Text("●  ${tr("Чат", "Chat", "聊天", "चैट")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    OutlinedButton(onClick = { difficultyOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                        Text("▥  ${tr("Сложность", "Difficulty", "难度", "कठिनाई")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
                     OutlinedButton(onClick = { reset() }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
                         Text("＋  ${tr("Новая партия", "New game", "新对局", "नया खेल")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
-                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                    OutlinedButton(onClick = { clockSettingsOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
                         Text("◷  ${tr("Часы", "Clock", "计时", "घड़ी")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
                 }
@@ -591,14 +566,6 @@ private fun ChessMindApp(context: Context) {
         confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK", color = dialogAccentColor) } })
     if (hintOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत"), color = dialogTextColor) },
         text = { Text(hintText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK", color = dialogAccentColor) } })
-    if (chatOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { chatOpen = false }, title = { Text(tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट"), color = dialogTextColor) },
-        text = { Column {
-            LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = dialogTextColor, modifier = Modifier.padding(vertical = 4.dp)) } }
-            OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश"), color = dialogTextColor) }, textStyle = androidx.compose.ui.text.TextStyle(color = dialogTextColor), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = dialogTextColor, unfocusedTextColor = dialogTextColor, focusedBorderColor = dialogAccentColor, unfocusedBorderColor = dialogAccentColor, focusedLabelColor = dialogAccentColor, unfocusedLabelColor = dialogTextColor, cursorColor = dialogAccentColor, focusedContainerColor = Color(0xFF1A2338), unfocusedContainerColor = Color(0xFF1A2338), focusedPlaceholderColor = dialogTextColor, unfocusedPlaceholderColor = dialogTextColor))
-        } }, confirmButton = { Row {
-            TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें"), color = dialogAccentColor) }
-            TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) }
-        } })
     if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = dialogTextColor) }, text = { Text(analysisText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
 }
 
