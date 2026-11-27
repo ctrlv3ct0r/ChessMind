@@ -408,10 +408,10 @@ private fun ChessMindApp(context: Context) {
             delay(1000)
             if (board.sideToMove.toString() == "WHITE") {
                 whiteSeconds = (whiteSeconds - 1).coerceAtLeast(0)
-                if (whiteSeconds == 0) status = tr("Время белых истекло. Партия окончена.", "White ran out of time. Game over.", "白方超时。对局结束。", "सफेद का समय समाप्त। खेल खत्म।")
+                if (whiteSeconds == 0) finishGame("Чёрные", false)
             } else {
                 blackSeconds = (blackSeconds - 1).coerceAtLeast(0)
-                if (blackSeconds == 0) status = tr("Время чёрных истекло. Партия окончена.", "Black ran out of time. Game over.", "黑方超时。对局结束。", "काले का समय समाप्त। खेल खत्म।")
+                if (blackSeconds == 0) finishGame("Белые", true)
             }
         }
     }
@@ -443,10 +443,10 @@ private fun ChessMindApp(context: Context) {
             board.doMove(chosen)
             lastMove = from to to
             val movingPiece = pieceLabel(Board().apply { loadFromFen(snapshot) }.getPiece(from).toString())
-            sanHistory = sanHistory + "${sanHistory.size / 2 + 1}… [$movingPiece] ${from.name.lowercase()}-${to.name.lowercase()}
+            sanHistory = sanHistory + "${sanHistory.size / 2 + 1}… [$movingPiece] ${from.name.lowercase()}-${to.name.lowercase()}"
             refresh(); thinking = false; selected = null; legalTargets = emptySet()
             when {
-                board.isMated -> finishGame("Белые", true)
+                board.isMated -> finishGame("Чёрные", false)
                 board.isDraw -> finishGame(null, false)
                 else -> status = tr("Твой ход. Посмотри, что изменилось.", "Your move. Look at what changed.", "轮到你了。看看局面变化。", "आपकी चाल। देखें क्या बदला।")
             }
