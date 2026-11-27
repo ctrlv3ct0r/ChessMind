@@ -467,7 +467,7 @@ private fun ChessMindApp(context: Context) {
                     Spacer(Modifier.height(9.dp))
                     Button(onClick = { reset(); whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60; menuOpen = false }, modifier = Modifier.fillMaxWidth().height(54.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF159B61), contentColor = Color.White), shape = RoundedCornerShape(16.dp), elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 2.dp)) { Text("＋  ${tr("Новая игра", "New game", "新游戏", "नया खेल")}", fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false) }
                     Spacer(Modifier.height(9.dp))
-                    OutlinedButton(onClick = { difficulty = if (difficulty >= 4) 1 else difficulty + 1; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply() }, modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(15.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF6552B8))) { Text("▥  ${tr("Сложность: ", "Difficulty: ", "难度：", "कठिनाई: ")}${difficultyLabels[difficulty - 1]}  ›", color = Color(0xFFD8C9FF), fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                    OutlinedButton(onClick = { difficultyOpen = true }, modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(15.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF6552B8))) { Text("▥  ${tr("Сложность: ", "Difficulty: ", "难度：", "कठिनाई: ")}${difficultyLabels[difficulty - 1]}  ›", color = Color(0xFFD8C9FF), fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
                     Spacer(Modifier.height(9.dp))
                     OutlinedButton(onClick = { rulesOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("♟  ${tr("Правила игры", "How to play", "游戏规则", "खेल के नियम")}", color = cream, maxLines = 1, softWrap = false) }
                     Spacer(Modifier.height(9.dp))
@@ -483,7 +483,7 @@ private fun ChessMindApp(context: Context) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = { menuOpen = true }, contentPadding = PaddingValues(horizontal = 4.dp)) { Text("‹", color = accentColor, fontSize = 30.sp, fontWeight = FontWeight.Bold) }
-                    OutlinedButton(onClick = { difficulty = if (difficulty >= 4) 1 else difficulty + 1; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply() }, shape = RoundedCornerShape(14.dp)) {
+                    OutlinedButton(onClick = { difficultyOpen = true }, shape = RoundedCornerShape(14.dp)) {
                         Text("▥  ${difficultyLabels[difficulty - 1]}  ⌄", color = textColor, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
                     }
                     Column(horizontalAlignment = Alignment.End) {
