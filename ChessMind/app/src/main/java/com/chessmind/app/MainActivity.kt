@@ -231,10 +231,10 @@ private fun ChessMindApp(context: Context) {
     var chatOpen by remember { mutableStateOf(false) }
     var language by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getString("language", "ru") ?: "ru") }
     var darkTheme by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getBoolean("dark_theme", true)) }
-    val bgColor = if (darkTheme) bgColor else Color(0xFFF5F3EE)
-    val surfaceColor = if (darkTheme) surfaceColor else Color(0xFFFFFFFF)
-    val textColor = if (darkTheme) textColor else Color(0xFF18211D)
-    val accentColor = if (darkTheme) accentColor else Color(0xFF315F3D)
+    val bgColor = if (darkTheme) forest else Color(0xFFF5F3EE)
+    val surfaceColor = if (darkTheme) panel else Color(0xFFFFFFFF)
+    val textColor = if (darkTheme) cream else Color(0xFF18211D)
+    val accentColor = if (darkTheme) green else Color(0xFF315F3D)
     var clockEnabled by remember { mutableStateOf(false) }
     var clockPreset by remember { mutableIntStateOf(5) }
     var whiteSeconds by remember { mutableIntStateOf(300) }
