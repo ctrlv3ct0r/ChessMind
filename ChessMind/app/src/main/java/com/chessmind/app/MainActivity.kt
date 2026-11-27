@@ -15,6 +15,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -30,12 +32,12 @@ import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.random.Random
 
-private val forest = Color(0xFF14211C)
-private val panel = Color(0xFF20332B)
-private val cream = Color(0xFFF0E6D2)
-private val green = Color(0xFF9DBB83)
-private val darkSquare = Color(0xFF66816D)
-private val lightSquare = Color(0xFFE8E2D2)
+private val forest = Color(0xFF080B18)
+private val panel = Color(0xFF171D30)
+private val cream = Color(0xFFF7F3EA)
+private val green = Color(0xFFFFC84A)
+private val darkSquare = Color(0xFF9A552F)
+private val lightSquare = Color(0xFFECC17B)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -382,6 +384,30 @@ private fun ChessMindApp(context: Context) {
     val scheme = if (darkTheme) darkColorScheme(primary = green, background = forest, surface = panel, onSurface = cream) else lightColorScheme(primary = Color(0xFF315F3D), background = Color(0xFFF5F3EE), surface = Color.White, onSurface = Color(0xFF18211D), onPrimary = Color.White, onBackground = Color(0xFF18211D))
     MaterialTheme(colorScheme = scheme) {
         Surface(Modifier.fillMaxSize(), color = bgColor) {
+            if (menuOpen) {
+                Column(Modifier.fillMaxSize().background(Color(0xFF080B18)).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp, vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Spacer(Modifier.height(10.dp))
+                    Image(painter = painterResource(id = com.chessmind.app.R.drawable.ic_chessmind_king), contentDescription = "ChessMind — король", modifier = Modifier.fillMaxWidth().height(250.dp), contentScale = ContentScale.Fit)
+                    Text("♛ ChessMind", color = cream, fontSize = 34.sp, fontWeight = FontWeight.Black, letterSpacing = (-1).sp)
+                    Text(tr("ШАХМАТЫ · ИИ · АНАЛИЗ · ОБУЧЕНИЕ", "CHESS · AI · ANALYSIS · TRAINING", "国际象棋 · AI · 分析 · 学习", "शतरंज · AI · विश्लेषण · प्रशिक्षण"), color = Color(0xFFC5C9D8), fontSize = 10.sp, letterSpacing = 1.sp)
+                    Spacer(Modifier.height(22.dp))
+                    Button(onClick = { menuOpen = false }, modifier = Modifier.fillMaxWidth().height(58.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC52E), contentColor = Color(0xFF171322)), shape = RoundedCornerShape(17.dp)) { Text("▶  ${tr("Продолжить", "Continue", "继续", "जारी रखें")}", fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false) }
+                    Spacer(Modifier.height(9.dp))
+                    Button(onClick = { reset(); whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60; menuOpen = false }, modifier = Modifier.fillMaxWidth().height(54.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF159B61), contentColor = Color.White), shape = RoundedCornerShape(16.dp)) { Text("＋  ${tr("Новая игра", "New game", "新游戏", "नया खेल")}", fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false) }
+                    Spacer(Modifier.height(9.dp))
+                    OutlinedButton(onClick = { difficulty = if (difficulty >= 4) 1 else difficulty + 1; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply() }, modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(15.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF6552B8))) { Text("▥  ${tr("Сложность: ", "Difficulty: ", "难度：", "कठिनाई: ")}${difficultyLabels[difficulty - 1]}  ›", color = Color(0xFFD8C9FF), fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                    Spacer(Modifier.height(9.dp))
+                    OutlinedButton(onClick = { menuOpen = false; showHint() }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("🎓  ${tr("Обучение · подсказка", "Training · hint", "训练 · 提示", "प्रशिक्षण · संकेत")}", color = cream, maxLines = 1, softWrap = false) }
+                    Spacer(Modifier.height(9.dp))
+                    OutlinedButton(onClick = { menuOpen = false; chatOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("💬  ${tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट")}", color = cream, maxLines = 1, softWrap = false) }
+                    Spacer(Modifier.height(9.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { languageOpen = true }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text("◎  ${tr("Язык", "Language", "语言", "भाषा")}", color = cream, maxLines = 1, softWrap = false) }
+                        OutlinedButton(onClick = { darkTheme = !darkTheme; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putBoolean("dark_theme", darkTheme).apply() }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text(if (darkTheme) "☀  ${tr("Светлая", "Light", "浅色", "हल्की")}" else "☾  ${tr("Тёмная", "Dark", "深色", "गहरी")}", color = cream, maxLines = 1, softWrap = false) }
+                    }
+                    TextButton(onClick = { authorOpen = true }) { Text(tr("Об авторе", "About", "关于作者", "लेखक के बारे में"), color = Color(0xFFB6BBD0)) }
+                }
+            } else {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Column {
@@ -462,19 +488,9 @@ private fun ChessMindApp(context: Context) {
                     Modifier.fillMaxWidth(), color = cream, fontSize = 11.sp)
                 Text(tr("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", "YOUR GOAL IS TO IMPROVE, NOT JUST WIN.", "目标是不断进步，而不只是获胜。", "लक्ष्य बेहतर बनना है, सिर्फ जीतना नहीं।"), color = green, fontSize = 9.sp, letterSpacing = 0.6.sp)
             }
+            }
         }
     }
-    if (menuOpen) AlertDialog(onDismissRequest = { menuOpen = false },
-        title = { Text(tr("Меню", "Menu", "菜单", "मेनू"), color = textColor) },
-        text = { Column {
-            TextButton(onClick = { menuOpen = false }) { Text(tr("Продолжить", "Continue", "继续", "जारी रखें"), color = textColor) }
-            TextButton(onClick = { reset(); whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60; menuOpen = false }) { Text(tr("Новая игра", "New game", "新游戏", "नया खेल"), color = textColor) }
-            TextButton(onClick = { menuOpen = false; authorOpen = true }) { Text(tr("Автор", "Author", "作者", "लेखक"), color = textColor) }
-            TextButton(onClick = { menuOpen = false; languageOpen = true }) { Text(tr("Выбор языка", "Language", "选择语言", "भाषा"), color = textColor) }
-            Text(tr("Сложность бота", "Bot difficulty", "机器人难度", "बॉट कठिनाई"), color = textColor, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { difficultyLabels.forEachIndexed { i, label -> TextButton(onClick = { difficulty = i + 1; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putInt("difficulty", difficulty).apply() }, contentPadding = PaddingValues(horizontal = 5.dp)) { Text(label, color = if (difficulty == i + 1) accentColor else textColor, fontSize = 11.sp, maxLines = 1, softWrap = false) } } }
-        } },
-        confirmButton = { TextButton(onClick = { menuOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) } })
     if (languageOpen) AlertDialog(onDismissRequest = { languageOpen = false }, title = { Text(tr("Выбор языка", "Choose language", "选择语言", "भाषा चुनें"), color = textColor) },
         text = { Column {
             listOf("ru" to "Русский", "en" to "English", "zh" to "中文", "hi" to "हिन्दी").forEach { (code, label) ->
