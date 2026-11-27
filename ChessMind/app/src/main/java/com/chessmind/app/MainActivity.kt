@@ -420,7 +420,7 @@ private fun ChessMindApp(context: Context) {
             if (menuOpen) {
                 Column(Modifier.fillMaxSize().background(Color(0xFF080B18)).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp, vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Spacer(Modifier.height(10.dp))
-                    Image(painter = painterResource(id = com.chessmind.app.R.drawable.ic_chessmind_king), contentDescription = "ChessMind — король", modifier = Modifier.fillMaxWidth().height(178.dp), contentScale = ContentScale.Fit)
+                    Image(painter = painterResource(id = com.chessmind.app.R.drawable.ic_chessmind_launcher), contentDescription = "ChessMind — король", modifier = Modifier.fillMaxWidth().height(178.dp), contentScale = ContentScale.Fit)
                     Text("♛ ChessMind", color = cream, fontSize = 38.sp, fontWeight = FontWeight.Black, letterSpacing = (-1).sp)
                     Text(tr("ШАХМАТЫ · ИИ · АНАЛИЗ · ОБУЧЕНИЕ", "CHESS · AI · ANALYSIS · TRAINING", "国际象棋 · AI · 分析 · 学习", "शतरंज · AI · विश्लेषण · प्रशिक्षण"), color = Color(0xFFC5C9D8), fontSize = 10.sp, letterSpacing = 1.sp)
                     Spacer(Modifier.height(28.dp))
@@ -481,7 +481,13 @@ private fun ChessMindApp(context: Context) {
                     }, Modifier.weight(1f), surfaceColor, textColor, accentColor)
                 }
                 Spacer(Modifier.height(10.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                    Button(onClick = { showHint() }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1769D2), contentColor = Color.White), contentPadding = PaddingValues(horizontal = 3.dp)) {
+                        Text("☼  ${tr("Подсказка", "Hint", "提示", "संकेत")}", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
+                    Button(onClick = { analysisText = if (lastHumanBeforeFen != null && lastHumanMove != null) engine.analyzeMove(lastHumanBeforeFen!!, lastHumanMove!!.first, lastHumanMove!!.second, difficulty.coerceAtMost(3)) else tr("Сделай ход, затем нажми «Анализ».", "Make a move, then tap Analysis.", "先走一步，然后点击分析。", "पहले चाल चलें, फिर विश्लेषण दबाएँ।"); analysisOpen = true }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), contentPadding = PaddingValues(horizontal = 3.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF159B61), contentColor = Color.White)) {
+                        Text("▥  ${tr("Анализ", "Analyze", "分析", "विश्लेषण")}", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
                     Button(onClick = {
                         if (history.isNotEmpty() && !thinking) {
                             board = Board().apply { loadFromFen(history.last()) }
@@ -489,19 +495,21 @@ private fun ChessMindApp(context: Context) {
                             if (sanHistory.isNotEmpty()) sanHistory = sanHistory.dropLast(1)
                             refresh(); status = tr("Ход отменён.", "Move undone.", "已撤销一步。", "चाल वापस ली गई।")
                         }
-                    }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97736), contentColor = Color.White)) {
-                        Text("↶ ${tr("Отмена", "Undo", "悔棋", "पूर्ववत")}", fontWeight = FontWeight.Bold)
-                    }
-                    Button(onClick = { reset() }, modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = green, contentColor = forest)) {
-                        Text(tr("Новая партия", "New game", "新游戏", "नया खेल"), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 12.sp)
+                    }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97716), contentColor = Color.White), contentPadding = PaddingValues(horizontal = 3.dp)) {
+                        Text("↶  ${tr("Отмена", "Undo", "悔棋", "पूर्ववत")}", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
                 }
                 Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OutlinedButton(onClick = { showHint() }, modifier = Modifier.weight(1f)) { Text(tr("Подсказка", "Hint", "提示", "संकेत"), color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp) }
-                    Button(onClick = { analysisText = if (lastHumanBeforeFen != null && lastHumanMove != null) engine.analyzeMove(lastHumanBeforeFen!!, lastHumanMove!!.first, lastHumanMove!!.second, difficulty.coerceAtMost(3)) else tr("Сделай ход, затем нажми «Анализ».", "Make a move, then tap Analysis.", "先走一步，然后点击分析。", "पहले चाल चलें, फिर विश्लेषण दबाएँ।"); analysisOpen = true }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 4.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF27834B), contentColor = Color.White)) { Text(tr("Анализ", "Analyze", "分析", "विश्लेषण"), maxLines = 1, softWrap = false, fontSize = 11.sp) }
-                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f)) { Text(tr("Часы", "Clock", "计时", "घड़ी"), color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp) }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                        Text("●  ${tr("Чат", "Chat", "聊天", "चैट")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
+                    OutlinedButton(onClick = { reset() }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                        Text("＋  ${tr("Новая партия", "New game", "新对局", "नया खेल")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
+                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                        Text("◷  ${tr("Часы", "Clock", "计时", "घड़ी")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
                 }
                 Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = accentColor, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Text(if (sanHistory.isEmpty()) tr("Партия ещё не началась", "Game has not started", "对局尚未开始", "खेल अभी शुरू नहीं हुआ") else sanHistory.takeLast(8).joinToString("   "),
