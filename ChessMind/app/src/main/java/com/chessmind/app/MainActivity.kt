@@ -314,6 +314,8 @@ private fun ChessMindApp(context: Context) {
         }.joinToString("\n")
     }
     fun finishGame(winner: String?, humanWon: Boolean) {
+        botTurnToken++
+        thinking = false
         status = if (winner == null) "Ничья." else "$winner выиграли!"
         profile = coach.finish(profile, humanWon, blunders)
         analysisText = status + "\n\n" + buildGameAnalysis()
