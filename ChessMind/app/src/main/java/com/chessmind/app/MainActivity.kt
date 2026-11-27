@@ -173,23 +173,50 @@ private class AdaptiveEngine(private val coach: AdaptiveCoach) {
     }
     private fun evaluateForTurn(board: Board): Double {
         val fen = board.fen.split(" ")
-        val values = mapOf('p' to 100, 'n' to 320, 'b' to 335, 'r' to 500, 'q' to 900, 'k' to 0)
+        val placement = fen[0].split("/")
+        val fullMove = fen.getOrNull(5)?.toIntOrNull() ?: 1
+        val values = mapOf('p' to 100, 'n' to 315, 'b' to 330, 'r' to 500, 'q' to 900, 'k' to 0)
         var whiteScore = 0.0
-        fen[0].split("/").forEachIndexed { row, rank ->
+
+        placement.forEachIndexed { row, rank ->
             var file = 0
             rank.forEach { ch ->
-                if (ch.isDigit()) file += ch.digitToInt() else {
-                    val sign = if (ch.isUpperCase()) 1.0 else -1.0
-                    val value = (values[ch.lowercaseChar()] ?: 0).toDouble()
-                    val center = 7.0 - (abs(3.5 - file) + abs(3.5 - row))
-                    val positional = if (ch.lowercaseChar() == 'n' || ch.lowercaseChar() == 'b') center * 2.0 else 0.0
-                    whiteScore += sign * (value + positional)
+                if (ch.isDigit()) {
+                    file += ch.digitToInt()
+                } else {
+                    val white = ch.isUpperCase()
+                    val sign = if (white) 1.0 else -1.0
+                    val type = ch.lowercaseChar()
+                    val advance = if (white) 6 - row else row - 1
+                    val centerDistance = abs(3.5 - file) + abs(3.5 - row)
+                    val centerBonus = (7.0 - centerDistance).coerceAtLeast(0.0)
+
+                    val positional = when (type) {
+                        'p' -> (advance.coerceAtLeast(0) * 7.0) +
+                            (if (file in 2..5 && row in 3..4) 12.0 else 0.0)
+                        'n' -> centerBonus * 3.0 +
+                            (if ((white && row < 7) || (!white && row > 0)) 16.0 else 0.0)
+                        'b' -> centerBonus * 1.5 +
+                            (if ((white && row < 7) || (!white && row > 0)) 12.0 else 0.0)
+                        'r' -> (if (if (white) row == 1 else row == 6) 14.0 else 0.0)
+                        'q' -> if (fullMove <= 10 && (if (white) row != 7 || file != 3 else row != 0 || file != 3)) -18.0 else 0.0
+                        'k' -> if (fullMove <= 12 && (if (white) row == 7 && file in 2..6 else row == 0 && file in 2..6)) -10.0 else 0.0
+                        else -> 0.0
+                    }
+                    whiteScore += sign * ((values[type] ?: 0).toDouble() + positional)
                     file++
                 }
             }
         }
-        val whiteToMove = board.sideToMove.toString() == "WHITE"
-        return if (whiteToMove) whiteScore else -whiteScore
+
+        // Reward castling: king on c/g-file and rook beside it is a useful king-safety signal.
+        val squares = placement
+        if (squares.size == 8) {
+            if (squares[7].contains('K') && (squares[7].indexOf('K') == 2 || squares[7].indexOf('K') == 6)) whiteScore += 28.0
+            if (squares[0].contains('k') && (squares[0].indexOf('k') == 2 || squares[0].indexOf('k') == 6)) whiteScore -= 28.0
+        }
+
+        return if (board.sideToMove.toString() == "WHITE") whiteScore else -whiteScore
     }
     private fun Double.pow2() = this * this
     private fun weightedIndex(weights: List<Double>): Int {
