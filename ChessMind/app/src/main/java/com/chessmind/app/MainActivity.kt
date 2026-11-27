@@ -272,7 +272,7 @@ private fun ChessMindApp(context: Context) {
     val dialogTextColor = Color(0xFFF7F3EA)
     val dialogAccentColor = Color(0xFFFFC84A)
     var clockEnabled by remember { mutableStateOf(gamePrefs.getBoolean("clock_enabled", false)) }
-    var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5)) }
+    var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5).coerceIn(1, 60)) }
     var whiteSeconds by remember { mutableIntStateOf(gamePrefs.getInt("white_seconds", 300)) }
     var blackSeconds by remember { mutableIntStateOf(gamePrefs.getInt("black_seconds", 300)) }
     var hintText by remember { mutableStateOf("") }
