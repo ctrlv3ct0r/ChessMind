@@ -418,6 +418,7 @@ private fun ChessMindApp(context: Context) {
 
     fun refresh() { fen = board.fen }
     fun reset() {
+        botTurnToken++
         board = Board(); refresh(); selected = null; legalTargets = emptySet()
         history = emptyList(); sanHistory = emptyList(); lastMove = null
         lastHumanBeforeFen = null; lastHumanMove = null
@@ -426,7 +427,8 @@ private fun ChessMindApp(context: Context) {
         gamePrefs.edit().clear().apply()
     }
     fun makeBotMove() {
-        if (board.isMated || board.isDraw) return
+        if (board.isMated || board.isDraw || whiteSeconds == 0 || blackSeconds == 0) return
+        val turnToken = ++botTurnToken
         thinking = true; status = tr("ChessMind думает…", "ChessMind is thinking…", "ChessMind 正在思考…", "ChessMind सोच रहा है…")
         val snapshot = board.fen
         scope.launch {
@@ -434,22 +436,24 @@ private fun ChessMindApp(context: Context) {
                 val copy = Board().apply { loadFromFen(snapshot) }
                 engine.bestMove(copy, difficulty) ?: return@withContext null
             }
+            if (turnToken != botTurnToken) return@launch
             if (chosen == null) { thinking = false; return@launch }
             history = history + board.fen
             val from = chosen.from; val to = chosen.to
             board.doMove(chosen)
             lastMove = from to to
-            sanHistory = sanHistory + "${sanHistory.size / 2 + 1}… ${from.name.lowercase()}${to.name.lowercase()}"
+            val movingPiece = pieceLabel(Board().apply { loadFromFen(snapshot) }.getPiece(from).toString())
+            sanHistory = sanHistory + "${sanHistory.size / 2 + 1}… [$movingPiece] ${from.name.lowercase()}-${to.name.lowercase()}
             refresh(); thinking = false; selected = null; legalTargets = emptySet()
-            status = when {
-                board.isMated -> tr("Мат. Ты выиграл!", "Checkmate. You win!", "将死。你赢了！", "शह-मात। आप जीत गए!")
-                board.isDraw -> tr("Ничья.", "Draw.", "和棋。", "ड्रॉ।")
-                else -> tr("Твой ход. Посмотри, что изменилось.", "Your move. Look at what changed.", "轮到你了。看看局面变化。", "आपकी चाल। देखें क्या बदला।")
+            when {
+                board.isMated -> finishGame("Белые", true)
+                board.isDraw -> finishGame(null, false)
+                else -> status = tr("Твой ход. Посмотри, что изменилось.", "Your move. Look at what changed.", "轮到你了。看看局面变化。", "आपकी चाल। देखें क्या बदला।")
             }
         }
     }
     fun selectSquare(square: Square) {
-        if (thinking || board.sideToMove.toString() != "WHITE") return
+        if (thinking || board.isMated || board.isDraw || whiteSeconds == 0 || blackSeconds == 0 || board.sideToMove.toString() != "WHITE") return
         if (selected == null) {
             val piece = board.getPiece(square).toString()
             if (piece.startsWith("WHITE")) {
@@ -464,19 +468,13 @@ private fun ChessMindApp(context: Context) {
                 lastHumanBeforeFen = before.fen
                 lastHumanMove = from to square
                 history = history + board.fen
-                val notation = "${sanHistory.size / 2 + 1}. ${from.name.lowercase()}${square.name.lowercase()}"
+                val notation = "${sanHistory.size / 2 + 1}. [${pieceLabel(before.getPiece(from).toString())}] ${from.name.lowercase()}-${square.name.lowercase()}
                 board.doMove(move)
                 profile = coach.observeMove(profile, before, move, board)
                 sanHistory = sanHistory + notation
                 lastMove = from to square
                 refresh(); selected = null; legalTargets = emptySet()
-                if (board.isMated) {
-                    status = tr("Мат! Ты выиграл.", "Checkmate! You win.", "将死！你赢了。", "शह-मात! आप जीत गए।")
-                    profile = coach.finish(profile, true, blunders)
-                } else if (board.isDraw) {
-                    status = tr("Ничья.", "Draw.", "和棋。", "ड्रॉ।")
-                    profile = coach.finish(profile, false, blunders)
-                } else makeBotMove()
+                if (board.isMated) finishGame("Белые", true) else if (board.isDraw) finishGame(null, false) else makeBotMove()
             } else {
                 val piece = board.getPiece(square).toString()
                 if (piece.startsWith("WHITE")) {
@@ -487,8 +485,8 @@ private fun ChessMindApp(context: Context) {
         }
     }
 
-    LaunchedEffect(menuOpen, fen) {
-        if (!menuOpen && board.sideToMove.toString() == "BLACK" && !board.isMated && !board.isDraw && !thinking) {
+    LaunchedEffect(menuOpen, fen, whiteSeconds, blackSeconds) {
+        if (!menuOpen && whiteSeconds > 0 && blackSeconds > 0 && board.sideToMove.toString() == "BLACK" && !board.isMated && !board.isDraw && !thinking) {
             makeBotMove()
         }
     }
