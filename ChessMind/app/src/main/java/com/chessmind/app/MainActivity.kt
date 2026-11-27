@@ -171,6 +171,34 @@ private fun ChessMindApp(context: Context) {
     var lastMove by remember { mutableStateOf<Pair<Square, Square>?>(null) }
     var blunders by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
+    var menuOpen by remember { mutableStateOf(false) }
+    var languageOpen by remember { mutableStateOf(false) }
+    var hintOpen by remember { mutableStateOf(false) }
+    var authorOpen by remember { mutableStateOf(false) }
+    var chatOpen by remember { mutableStateOf(false) }
+    var language by remember { mutableStateOf("ru") }
+    var clockEnabled by remember { mutableStateOf(false) }
+    var clockPreset by remember { mutableIntStateOf(5) }
+    var whiteSeconds by remember { mutableIntStateOf(300) }
+    var blackSeconds by remember { mutableIntStateOf(300) }
+    var chatInput by remember { mutableStateOf("") }
+    var chatMessages by remember { mutableStateOf(listOf("ChessMind: Привет! Спроси меня о шахматах.")) }
+    var hintText by remember { mutableStateOf("") }
+    fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
+    fun clockText(s: Int) = "%02d:%02d".format(s / 60, s % 60)
+    fun showHint() {
+        val legal = Board().apply { loadFromFen(board.fen) }.legalMoves()
+        val m = legal.firstOrNull()
+        hintText = if (m == null) tr("Нет доступных ходов.", "No legal moves.", "没有合法走法。", "कोई वैध चाल नहीं।") else tr("Попробуй ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. Это простой ориентир, не глубокий анализ.", "Try ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. This is a simple suggestion, not deep analysis.", "试试 ${m.from.name.lowercase()} → ${m.to.name.lowercase()}。这是简单建议，并非深度分析。", "${m.from.name.lowercase()} → ${m.to.name.lowercase()} आज़माएँ। यह सरल सुझाव है।")
+        hintOpen = true
+    }
+    fun sendChat() {
+        val q = chatInput.trim()
+        if (q.isNotEmpty()) {
+            val a = tr("Я локальный шахматный помощник. Пока могу предложить легальный ход и объяснить базовые правила; свободный диалог и глубокий анализ ещё предстоит добавить.", "I’m an offline chess helper. I can suggest a legal move and explain basic rules; free conversation and deep analysis are not implemented yet.", "我是离线国际象棋助手，可以建议合法走法并解释基本规则；自由对话和深度分析尚未实现。", "मैं ऑफ़लाइन शतरंज सहायक हूँ। मैं वैध चाल सुझा सकता हूँ और बुनियादी नियम समझा सकता हूँ।")
+            chatMessages = chatMessages + "Вы: $q" + "ChessMind: $a"; chatInput = ""
+        }
+    }
 
     fun refresh() { fen = board.fen }
     fun reset() {
@@ -286,8 +314,8 @@ private fun ChessMindApp(context: Context) {
                             if (sanHistory.isNotEmpty()) sanHistory = sanHistory.dropLast(1)
                             refresh(); status = "Ход отменён."
                         }
-                    }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = panel)) {
-                        Text("↶ Отмена")
+                    }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97736), contentColor = Color.White)) {
+                        Text("↶ Отмена", fontWeight = FontWeight.Bold)
                     }
                     Button(onClick = { reset() }, modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = green, contentColor = forest)) {
