@@ -388,8 +388,9 @@ private fun ChessMindApp(context: Context) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { menuOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Меню", "Menu", "菜单", "मेनू"), color = textColor, maxLines = 1, softWrap = false, fontSize = 12.sp) }
                     OutlinedButton(onClick = { languageOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Язык", "Language", "语言", "भाषा"), color = textColor, maxLines = 1, softWrap = false, fontSize = 12.sp) }
-                    Button(onClick = { chatOpen = true }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = green, contentColor = forest)) { Text(tr("Чат", "Chat", "聊天", "चैट"), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 12.sp) }
+                    Button(onClick = { chatOpen = true }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = accentColor, contentColor = bgColor)) { Text(tr("Чат", "Chat", "聊天", "चैट"), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 12.sp) }
                 }
+                OutlinedButton(onClick = { darkTheme = !darkTheme; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putBoolean("dark_theme", darkTheme).apply() }, modifier = Modifier.fillMaxWidth()) { Text(if (darkTheme) tr("☀ Светлая тема", "☀ Light theme", "☀ 浅色主题", "☀ हल्की थीम") else tr("☾ Тёмная тема", "☾ Dark theme", "☾ 深色主题", "☾ गहरी थीम"), color = textColor, maxLines = 1, softWrap = false) }
                 Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column {
