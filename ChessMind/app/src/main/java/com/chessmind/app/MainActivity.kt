@@ -246,14 +246,13 @@ private fun ChessMindApp(context: Context) {
     var languageOpen by remember { mutableStateOf(false) }
     var hintOpen by remember { mutableStateOf(false) }
     var authorOpen by remember { mutableStateOf(false) }
-    var chatOpen by remember { mutableStateOf(false) }\n    var analysisOpen by remember { mutableStateOf(false) }\n    var analysisText by remember { mutableStateOf("") }\n    var lastHumanBeforeFen by remember { mutableStateOf<String?>(null) }\n    var lastHumanMove by remember { mutableStateOf<Pair<Square, Square>?>(null) }\n    var difficulty by remember { mutableIntStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getInt("difficulty", 2).coerceIn(1, 4)) }
+    var chatOpen by remember { mutableStateOf(false) }
     var language by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getString("language", "ru") ?: "ru") }
     var darkTheme by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getBoolean("dark_theme", true)) }
     val bgColor = if (darkTheme) forest else Color(0xFFF5F3EE)
     val surfaceColor = if (darkTheme) panel else Color(0xFFFFFFFF)
     val textColor = if (darkTheme) cream else Color(0xFF18211D)
     val accentColor = if (darkTheme) green else Color(0xFF315F3D)
-    val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
     var clockEnabled by remember { mutableStateOf(false) }
     var clockPreset by remember { mutableIntStateOf(5) }
     var whiteSeconds by remember { mutableIntStateOf(300) }
@@ -262,6 +261,7 @@ private fun ChessMindApp(context: Context) {
     var chatMessages by remember { mutableStateOf(listOf("ChessMind: Привет! Спроси меня о шахматах.")) }
     var hintText by remember { mutableStateOf("") }
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
+    val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
     LaunchedEffect(language) {
         if (sanHistory.isEmpty()) status = tr("Твой ход. Начни с белых.", "Your move. Start as White.", "轮到你了。白方先行。", "आपकी चाल। सफेद से शुरू करें।")
     }
@@ -457,7 +457,6 @@ private fun ChessMindApp(context: Context) {
             }
         }
     }
-    MaterialTheme(colorScheme = scheme) {
     if (menuOpen) AlertDialog(onDismissRequest = { menuOpen = false },
         title = { Text(tr("Меню", "Menu", "菜单", "मेनू"), color = textColor) },
         text = { Column {
@@ -489,7 +488,6 @@ private fun ChessMindApp(context: Context) {
             TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) }
         } })
     if (analysisOpen) AlertDialog(onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = textColor) }, text = { Text(analysisText, color = textColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) } })
-    }
 }
 
 private fun styleName(p: PlayerProfile): String = when {
@@ -556,3 +554,5 @@ private fun parseFenBoard(fen: String): List<List<Char?>> {
 private fun pieceGlyph(piece: Char): String = when (piece) {
     'K' -> "♔"; 'Q' -> "♕"; 'R' -> "♖"; 'B' -> "♗"; 'N' -> "♘"; 'P' -> "♙"
     'k' -> "♚"; 'q' -> "♛"; 'r' -> "♜"; 'b' -> "♝"; 'n' -> "♞"; 'p' -> "♟"; else -> ""
+
+}
