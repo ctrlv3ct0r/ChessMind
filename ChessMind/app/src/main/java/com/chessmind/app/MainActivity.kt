@@ -321,6 +321,7 @@ private fun ChessMindApp(context: Context) {
                 val copy = Board().apply { loadFromFen(snapshot) }
                 engine.bestMove(copy, difficulty) ?: return@withContext null
             }
+            if (chosen == null) { thinking = false; return@launch }
             history = history + board.fen
             val from = chosen.from; val to = chosen.to
             board.doMove(chosen)
