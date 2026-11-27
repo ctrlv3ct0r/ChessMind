@@ -509,8 +509,6 @@ private fun ChessMindApp(context: Context) {
                     Spacer(Modifier.height(9.dp))
                     OutlinedButton(onClick = { rulesOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("♟  ${tr("Правила игры", "How to play", "游戏规则", "खेल के नियम")}", color = cream, maxLines = 1, softWrap = false) }
                     Spacer(Modifier.height(9.dp))
-                    OutlinedButton(onClick = { menuOpen = false; chatOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("💬  ${tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट")}", color = cream, maxLines = 1, softWrap = false) }
-                    Spacer(Modifier.height(9.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { languageOpen = true }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text("◎  ${tr("Язык", "Language", "语言", "भाषा")}", color = cream, maxLines = 1, softWrap = false) }
                         OutlinedButton(onClick = { darkTheme = !darkTheme; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putBoolean("dark_theme", darkTheme).apply() }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text(if (darkTheme) "☀  ${tr("Светлая", "Light", "浅色", "हल्की")}" else "☾  ${tr("Тёмная", "Dark", "深色", "गहरी")}", color = cream, maxLines = 1, softWrap = false) }
@@ -582,9 +580,7 @@ private fun ChessMindApp(context: Context) {
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
-                        Text("●  ${tr("Чат", "Chat", "聊天", "चैट")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
-                    }
+                    OutlinedButton(onClick = { difficultyOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) { Text("▥  ${tr("Сложность", "Difficulty", "难度", "कठ难")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp) }
                     OutlinedButton(onClick = { reset() }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
                         Text("＋  ${tr("Новая партия", "New game", "新对局", "नया खेल")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
@@ -629,14 +625,6 @@ private fun ChessMindApp(context: Context) {
         confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK", color = dialogAccentColor) } })
     if (hintOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत"), color = dialogTextColor) },
         text = { Text(hintText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK", color = dialogAccentColor) } })
-    if (chatOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { chatOpen = false }, title = { Text(tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट"), color = dialogTextColor) },
-        text = { Column {
-            LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = dialogTextColor, modifier = Modifier.padding(vertical = 4.dp)) } }
-            OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश"), color = dialogTextColor) }, textStyle = androidx.compose.ui.text.TextStyle(color = dialogTextColor), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = dialogTextColor, unfocusedTextColor = dialogTextColor, focusedBorderColor = dialogAccentColor, unfocusedBorderColor = dialogAccentColor, focusedLabelColor = dialogAccentColor, unfocusedLabelColor = dialogTextColor, cursorColor = dialogAccentColor, focusedContainerColor = Color(0xFF1A2338), unfocusedContainerColor = Color(0xFF1A2338), focusedPlaceholderColor = dialogTextColor, unfocusedPlaceholderColor = dialogTextColor))
-        } }, confirmButton = { Row {
-            TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें"), color = dialogAccentColor) }
-            TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) }
-        } })
     if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = dialogTextColor) }, text = { Text(analysisText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
 }
 
