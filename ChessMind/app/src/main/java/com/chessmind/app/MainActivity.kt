@@ -316,7 +316,7 @@ private fun ChessMindApp(context: Context) {
     fun finishGame(winner: String?, humanWon: Boolean) {
         status = if (winner == null) "Ничья." else "$winner выиграли!"
         profile = coach.finish(profile, humanWon, blunders)
-        analysisText = buildGameAnalysis()
+        analysisText = status + "\n\n" + buildGameAnalysis()
         analysisOpen = true
     }
     fun undoTurn() {
@@ -599,7 +599,7 @@ private fun ChessMindApp(context: Context) {
         confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK", color = dialogAccentColor) } })
     if (hintOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत"), color = dialogTextColor) },
         text = { Text(hintText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK", color = dialogAccentColor) } })
-    if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Итоги и анализ партии", "Game review", "对局复盘", "खेल का विश्लेषण"), color = dialogTextColor) }, text = { Text(analysisText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
+    if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Итоги и анализ партии", "Game review", "对局复盘", "खेल का विश्लेषण"), color = dialogTextColor) }, text = { Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) { Text(analysisText, color = dialogTextColor) } }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
 }
 
 private fun styleName(p: PlayerProfile): String = when {
