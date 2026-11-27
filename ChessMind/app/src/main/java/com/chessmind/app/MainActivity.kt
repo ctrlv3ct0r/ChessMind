@@ -455,6 +455,14 @@ private fun ChessMindApp(context: Context) {
                 Spacer(Modifier.height(8.dp))
                 if (!menuOpen) ChessBoard(fen, selected, legalTargets, lastMove) { selectSquare(it) }
                 Spacer(Modifier.height(12.dp))
+                if (clockEnabled) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
+                        Text("♟ ${clockText(blackSeconds)}", color = if (board.sideToMove.toString() == "BLACK") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
+                        TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = accentColor) }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
                 Surface(color = if (darkTheme) panel else Color(0xFFE8EDF3), shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(13.dp)) {
                         Text(status, color = gameTextColor, fontWeight = FontWeight.SemiBold)
@@ -494,13 +502,6 @@ private fun ChessMindApp(context: Context) {
                     OutlinedButton(onClick = { showHint() }, modifier = Modifier.weight(1f)) { Text(tr("Подсказка", "Hint", "提示", "संकेत"), color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp) }
                     Button(onClick = { analysisText = if (lastHumanBeforeFen != null && lastHumanMove != null) engine.analyzeMove(lastHumanBeforeFen!!, lastHumanMove!!.first, lastHumanMove!!.second, difficulty.coerceAtMost(3)) else tr("Сделай ход, затем нажми «Анализ».", "Make a move, then tap Analysis.", "先走一步，然后点击分析。", "पहले चाल चलें, फिर विश्लेषण दबाएँ।"); analysisOpen = true }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 4.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF27834B), contentColor = Color.White)) { Text(tr("Анализ", "Analyze", "分析", "विश्लेषण"), maxLines = 1, softWrap = false, fontSize = 11.sp) }
                     OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f)) { Text(tr("Часы", "Clock", "计时", "घड़ी"), color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp) }
-                }
-                if (clockEnabled) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
-                        Text("♟ ${clockText(blackSeconds)}", color = if (board.sideToMove.toString() == "BLACK") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
-                        TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = accentColor) }
-                    }
                 }
                 Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = accentColor, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 Text(if (sanHistory.isEmpty()) tr("Партия ещё не началась", "Game has not started", "对局尚未开始", "खेल अभी शुरू नहीं हुआ") else sanHistory.takeLast(8).joinToString("   "),
