@@ -187,6 +187,9 @@ private fun ChessMindApp(context: Context) {
     var chatMessages by remember { mutableStateOf(listOf("ChessMind: Привет! Спроси меня о шахматах.")) }
     var hintText by remember { mutableStateOf("") }
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
+    LaunchedEffect(language) {
+        if (sanHistory.isEmpty()) status = tr("Твой ход. Начни с белых.", "Your move. Start as White.", "轮到你了。白方先行。", "आपकी चाल। सफेद से शुरू करें।")
+    }
     fun clockText(s: Int) = "%02d:%02d".format(s / 60, s % 60)
     fun showHint() {
         val position = Board().apply { loadFromFen(board.fen) }
