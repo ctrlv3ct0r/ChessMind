@@ -399,7 +399,7 @@ private fun ChessMindApp(context: Context) {
                     Text(if (thinking) tr("ДУМАЕТ…", "THINKING…", "思考中…", "सोच रहा है…") else tr("● ОНЛАЙН ЛОКАЛЬНО", "● OFFLINE READY", "● 本地运行", "● ऑफ़लाइन तैयार"), color = if (thinking) Color(0xFFFFC66D) else green, fontSize = 10.sp)
                 }
                 Spacer(Modifier.height(8.dp))
-                ChessBoard(fen, selected, legalTargets, lastMove) { selectSquare(it) }
+                if (!menuOpen) ChessBoard(fen, selected, legalTargets, lastMove) { selectSquare(it) }
                 Spacer(Modifier.height(12.dp))
                 Surface(color = panel, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(13.dp)) {
@@ -437,9 +437,9 @@ private fun ChessMindApp(context: Context) {
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OutlinedButton(onClick = { showHint() }, modifier = Modifier.weight(1f)) { Text(tr("Подсказка", "Hint", "提示", "संकेत"), color = green) }
-                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f)) { Text(tr("Открыть чат", "Open chat", "打开聊天", "चैट खोलें"), color = green) }
-                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f)) { Text(tr("Часы", "Clock", "计时", "घड़ी"), color = green) }
+                    OutlinedButton(onClick = { showHint() }, modifier = Modifier.weight(1f)) { Text(tr("Подсказка", "Hint", "提示", "संकेत"), color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp) }
+                    Button(onClick = { analysisText = if (lastHumanBeforeFen != null && lastHumanMove != null) engine.analyzeMove(lastHumanBeforeFen!!, lastHumanMove!!.first, lastHumanMove!!.second, difficulty.coerceAtMost(3)) else tr("Сделай ход, затем нажми «Анализ».", "Make a move, then tap Analysis.", "先走一步，然后点击分析。", "पहले चाल चलें, फिर विश्लेषण दबाएँ।"); analysisOpen = true }, modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 4.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF27834B), contentColor = Color.White)) { Text(tr("Анализ", "Analyze", "分析", "विश्लेषण"), maxLines = 1, softWrap = false, fontSize = 11.sp) }
+                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f)) { Text(tr("Часы", "Clock", "计时", "घड़ी"), color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp) }
                 }
                 if (clockEnabled) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -480,8 +480,8 @@ private fun ChessMindApp(context: Context) {
             LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = textColor, modifier = Modifier.padding(vertical = 4.dp)) } }
             OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश"), color = textColor) }, textStyle = androidx.compose.ui.text.TextStyle(color = textColor), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = textColor, unfocusedTextColor = textColor, focusedBorderColor = accentColor, unfocusedBorderColor = accentColor, focusedLabelColor = accentColor, unfocusedLabelColor = textColor))
         } }, confirmButton = { Row {
-            TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें")) }
-            TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें")) }
+            TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें"), color = accentColor) }
+            TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) }
         } })
 }
 
@@ -549,4 +549,4 @@ private fun parseFenBoard(fen: String): List<List<Char?>> {
 private fun pieceGlyph(piece: Char): String = when (piece) {
     'K' -> "♔"; 'Q' -> "♕"; 'R' -> "♖"; 'B' -> "♗"; 'N' -> "♘"; 'P' -> "♙"
     'k' -> "♚"; 'q' -> "♛"; 'r' -> "♜"; 'b' -> "♝"; 'n' -> "♞"; 'p' -> "♟"; else -> ""
-}
+\n    if (analysisOpen) AlertDialog(onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = textColor) }, text = { Text(analysisText, color = textColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) } })\n    }}
