@@ -198,8 +198,21 @@ private fun ChessMindApp(context: Context) {
     fun sendChat() {
         val q = chatInput.trim()
         if (q.isNotEmpty()) {
-            val a = tr("Я локальный шахматный помощник. Пока могу предложить легальный ход и объяснить базовые правила; свободный диалог и глубокий анализ ещё предстоит добавить.", "I’m an offline chess helper. I can suggest a legal move and explain basic rules; free conversation and deep analysis are not implemented yet.", "我是离线国际象棋助手，可以建议合法走法并解释基本规则；自由对话和深度分析尚未实现。", "मैं ऑफ़लाइन शतरंज सहायक हूँ। मैं वैध चाल सुझा सकता हूँ और बुनियादी नियम समझा सकता हूँ।")
-            chatMessages = chatMessages + tr("Вы: $q", "You: $q", "你：$q", "आप: $q") + "ChessMind: $a"; chatInput = ""
+            val pos = Board().apply { loadFromFen(board.fen) }
+            val legalCount = pos.legalMoves().size
+            val side = if (pos.sideToMove.toString() == "WHITE") tr("белых", "White", "白方", "सफेद") else tr("чёрных", "Black", "黑方", "काले")
+            val a = when {
+                q.contains("подсказ", true) || q.contains("hint", true) || q.contains("ход", true) || q.contains("move", true) -> {
+                    val best = if (legalCount > 0) engine.choose(pos, profile) else null
+                    if (best == null) tr("В этой позиции ходов нет: партия завершена.", "There are no legal moves: the game is over.", "当前没有合法走法：对局已结束。", "कोई वैध चाल नहीं: खेल समाप्त हो गया है।")
+                    else tr("Попробуй ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. Это рекомендация встроенного эвристического движка, а не экспертный анализ.", "Try ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. This is a recommendation from the built-in heuristic engine, not expert analysis.", "可以尝试 ${best.from.name.lowercase()} → ${best.to.name.lowercase()}。这是内置启发式引擎的建议，并非专家级分析。", "${best.from.name.lowercase()} → ${best.to.name.lowercase()} आज़माएँ। यह अंतर्निहित इंजन का सुझाव है।")
+                }
+                q.contains("позици", true) || q.contains("position", true) || q.contains("сейчас", true) -> tr("Сейчас ход ${side}. Доступно легальных ходов: $legalCount. Я могу предложить вариант по запросу «подскажи ход».", "It is ${side} to move. Legal moves available: $legalCount. Ask me to suggest a move for a candidate.", "现在轮到${side}。可用合法走法：$legalCount。你可以让我推荐一步。", "अब ${side} की चाल है। वैध चालें: $legalCount। सुझाव के लिए मुझसे चाल पूछें।")
+                q.contains("правил", true) || q.contains("rule", true) -> tr("Цель — поставить мат королю соперника. Шах означает нападение на короля; из-под шаха нужно обязательно выйти.", "The goal is to checkmate the opponent’s king. Check means the king is under attack and must be protected.", "目标是将死对方的王。将军表示王受到攻击，必须应将。", "लक्ष्य प्रतिद्वंद्वी के राजा को शह-मात देना है। शह में राजा पर हमला होता है और उससे बचना अनिवार्य है।")
+                else -> tr("Я могу оценить текущую позицию, подсказать ход или объяснить базовые правила. Спроси, например: «Что сейчас происходит?» или «Подскажи ход».", "I can describe the current position, suggest a move, or explain basic rules. Try: “What is happening?” or “Suggest a move.”", "我可以介绍当前局面、推荐走法或解释基本规则。可以问：“现在局面如何？”或“推荐一步棋”。", "मैं वर्तमान स्थिति समझा सकता हूँ, चाल सुझा सकता हूँ या बुनियादी नियम बता सकता हूँ। पूछें: “अभी स्थिति क्या है?”")
+            }
+            chatMessages = chatMessages + tr("Вы: $q", "You: $q", "你：$q", "आप: $q") + "ChessMind: $a"
+            chatInput = ""
         }
     }
     LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds) {
