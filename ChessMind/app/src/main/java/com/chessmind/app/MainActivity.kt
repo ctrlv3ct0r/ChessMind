@@ -244,6 +244,9 @@ private fun ChessMindApp(context: Context) {
     var sanHistory by remember { mutableStateOf(gamePrefs.getString("san_history", "")?.split("\n")?.filter { it.isNotBlank() } ?: emptyList()) }
     var profile by remember { mutableStateOf(coach.load()) }
     var thinking by remember { mutableStateOf(false) }
+    var botTurnToken by remember { mutableIntStateOf(0) }
+    var difficultyOpen by remember { mutableStateOf(false) }
+    var clockSettingsOpen by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf(gamePrefs.getString("status", "Твой ход. Начни с белых.") ?: "Твой ход. Начни с белых.") }
     var lastMove by remember { mutableStateOf(gamePrefs.getString("last_move", null)?.split(",")?.takeIf { it.size == 2 }?.let { runCatching { Square.valueOf(it[0]) to Square.valueOf(it[1]) }.getOrNull() }) }
     var blunders by remember { mutableIntStateOf(0) }
@@ -661,6 +664,16 @@ private fun parseFenBoard(fen: String): List<List<Char?>> {
         }
         cells
     }
+}
+
+private fun pieceLabel(piece: String): String = when {
+    piece.contains("PAWN") -> "пешка"
+    piece.contains("ROOK") -> "ладья"
+    piece.contains("KNIGHT") -> "конь"
+    piece.contains("BISHOP") -> "слон"
+    piece.contains("QUEEN") -> "ферзь"
+    piece.contains("KING") -> "король"
+    else -> "фигура"
 }
 
 private fun pieceGlyph(piece: Char): String = when (piece) {
