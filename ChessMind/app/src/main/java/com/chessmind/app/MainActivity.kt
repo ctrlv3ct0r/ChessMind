@@ -483,6 +483,8 @@ private fun ChessMindApp(context: Context) {
             TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें"), color = accentColor) }
             TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) }
         } })
+    if (analysisOpen) AlertDialog(onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = textColor) }, text = { Text(analysisText, color = textColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) } })
+    }
 }
 
 private fun styleName(p: PlayerProfile): String = when {
@@ -549,4 +551,3 @@ private fun parseFenBoard(fen: String): List<List<Char?>> {
 private fun pieceGlyph(piece: Char): String = when (piece) {
     'K' -> "♔"; 'Q' -> "♕"; 'R' -> "♖"; 'B' -> "♗"; 'N' -> "♘"; 'P' -> "♙"
     'k' -> "♚"; 'q' -> "♛"; 'r' -> "♜"; 'b' -> "♝"; 'n' -> "♞"; 'p' -> "♟"; else -> ""
-\n    if (analysisOpen) AlertDialog(onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = textColor) }, text = { Text(analysisText, color = textColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = accentColor) } })\n    }}
