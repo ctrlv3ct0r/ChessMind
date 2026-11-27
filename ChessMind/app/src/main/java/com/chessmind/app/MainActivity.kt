@@ -458,11 +458,15 @@ private fun ChessMindApp(context: Context) {
                 if (!menuOpen) ChessBoard(fen, selected, legalTargets, lastMove) { selectSquare(it) }
                 Spacer(Modifier.height(12.dp))
                 if (clockEnabled) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("♙ ${clockText(whiteSeconds)}", color = if (board.sideToMove.toString() == "WHITE") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
-                        Text("♟ ${clockText(blackSeconds)}", color = if (board.sideToMove.toString() == "BLACK") (if (darkTheme) Color(0xFFFFC66D) else Color(0xFF8A4B08)) else gameTextColor, fontWeight = FontWeight.Bold)
-                        TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("${clockPreset}+0", color = accentColor) }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Surface(modifier = Modifier.weight(1f), color = if (board.sideToMove.toString() == "WHITE") Color(0xFF27364E) else surfaceColor, shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, if (board.sideToMove.toString() == "WHITE") Color(0xFFFFC84A) else Color(0xFF45516A))) {
+                            Text("♙  ${clockText(whiteSeconds)}", Modifier.padding(vertical = 12.dp), color = Color(0xFFF7F3EA), fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        }
+                        Surface(modifier = Modifier.weight(1f), color = if (board.sideToMove.toString() == "BLACK") Color(0xFF27364E) else surfaceColor, shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, if (board.sideToMove.toString() == "BLACK") Color(0xFFFFC84A) else Color(0xFF45516A))) {
+                            Text("♟  ${clockText(blackSeconds)}", Modifier.padding(vertical = 12.dp), color = Color(0xFFF7F3EA), fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        }
                     }
+                    TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("◷  ${clockPreset}+0", color = accentColor) }
                 }
                 Spacer(Modifier.height(8.dp))
                 Surface(color = if (darkTheme) panel else Color(0xFFE8EDF3), shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
