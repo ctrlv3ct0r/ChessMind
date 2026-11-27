@@ -255,7 +255,6 @@ private fun ChessMindApp(context: Context) {
     var languageOpen by remember { mutableStateOf(false) }
     var hintOpen by remember { mutableStateOf(false) }
     var authorOpen by remember { mutableStateOf(false) }
-    var chatOpen by remember { mutableStateOf(false) }
     var analysisOpen by remember { mutableStateOf(false) }
     var analysisText by remember { mutableStateOf("") }
     var lastHumanBeforeFen by remember { mutableStateOf(gamePrefs.getString("last_human_fen", null)) }
@@ -276,8 +275,6 @@ private fun ChessMindApp(context: Context) {
     var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5)) }
     var whiteSeconds by remember { mutableIntStateOf(gamePrefs.getInt("white_seconds", 300)) }
     var blackSeconds by remember { mutableIntStateOf(gamePrefs.getInt("black_seconds", 300)) }
-    var chatInput by remember { mutableStateOf("") }
-    var chatMessages by remember { mutableStateOf(listOf("ChessMind: Привет! Спроси меня о шахматах.")) }
     var hintText by remember { mutableStateOf("") }
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
     val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
@@ -383,28 +380,8 @@ private fun ChessMindApp(context: Context) {
         hintText = if (m == null) tr("Нет доступных ходов.", "No legal moves.", "没有合法走法。", "कोई वैध चाल नहीं।") else tr("Попробуй ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. Это простой ориентир, не глубокий анализ.", "Try ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. This is a simple suggestion, not deep analysis.", "试试 ${m.from.name.lowercase()} → ${m.to.name.lowercase()}。这是简单建议，并非深度分析。", "${m.from.name.lowercase()} → ${m.to.name.lowercase()} आज़माएँ। यह सरल सुझाव है।")
         hintOpen = true
     }
-    fun sendChat() {
-        val q = chatInput.trim()
-        if (q.isNotEmpty()) {
-            val pos = Board().apply { loadFromFen(board.fen) }
-            val legalCount = pos.legalMoves().size
-            val side = if (pos.sideToMove.toString() == "WHITE") tr("белых", "White", "白方", "सफेद") else tr("чёрных", "Black", "黑方", "काले")
-            val a = when {
-                q.contains("подсказ", true) || q.contains("hint", true) || q.contains("ход", true) || q.contains("move", true) -> {
-                    val best = if (legalCount > 0) engine.bestMove(pos, 3) else null
-                    if (best == null) tr("В этой позиции ходов нет: партия завершена.", "There are no legal moves: the game is over.", "当前没有合法走法：对局已结束。", "कोई वैध चाल नहीं: खेल समाप्त हो गया है।")
-                    else tr("Попробуй ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. Это рекомендация встроенного эвристического движка, а не экспертный анализ.", "Try ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. This is a recommendation from the built-in heuristic engine, not expert analysis.", "可以尝试 ${best.from.name.lowercase()} → ${best.to.name.lowercase()}。这是内置启发式引擎的建议，并非专家级分析。", "${best.from.name.lowercase()} → ${best.to.name.lowercase()} आज़माएँ। यह अंतर्निहित इंजन का सुझाव है।")
-                }
-                q.contains("позици", true) || q.contains("position", true) || q.contains("сейчас", true) -> tr("Сейчас ход ${side}. Доступно легальных ходов: $legalCount. Я могу предложить вариант по запросу «подскажи ход».", "It is ${side} to move. Legal moves available: $legalCount. Ask me to suggest a move for a candidate.", "现在轮到${side}。可用合法走法：$legalCount。你可以让我推荐一步。", "अब ${side} की चाल है। वैध चालें: $legalCount। सुझाव के लिए मुझसे चाल पूछें।")
-                q.contains("правил", true) || q.contains("rule", true) -> tr("Цель — поставить мат королю соперника. Шах означает нападение на короля; из-под шаха нужно обязательно выйти.", "The goal is to checkmate the opponent’s king. Check means the king is under attack and must be protected.", "目标是将死对方的王。将军表示王受到攻击，必须应将。", "लक्ष्य प्रतिद्वंद्वी के राजा को शह-मात देना है। शह में राजा पर हमला होता है और उससे बचना अनिवार्य है।")
-                else -> tr("Я могу оценить текущую позицию, подсказать ход или объяснить базовые правила. Спроси, например: «Что сейчас происходит?» или «Подскажи ход».", "I can describe the current position, suggest a move, or explain basic rules. Try: “What is happening?” or “Suggest a move.”", "我可以介绍当前局面、推荐走法或解释基本规则。可以问：“现在局面如何？”或“推荐一步棋”。", "मैं वर्तमान स्थिति समझा सकता हूँ, चाल सुझा सकता हूँ या बुनियादी नियम बता सकता हूँ। पूछें: “अभी स्थिति क्या है?”")
-            }
-            chatMessages = chatMessages + tr("Вы: $q", "You: $q", "你：$q", "आप: $q") + "ChessMind: $a"
-            chatInput = ""
-        }
-    }
     LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds, menuOpen) {
-        if (clockEnabled && !board.isMated && !board.isDraw && whiteSeconds > 0 && blackSeconds > 0) {
+        if (clockEnabled && !menuOpen && !board.isMated && !board.isDraw && whiteSeconds > 0 && blackSeconds > 0) {
             delay(1000)
             if (board.sideToMove.toString() == "WHITE") {
                 whiteSeconds = (whiteSeconds - 1).coerceAtLeast(0)
@@ -659,7 +636,7 @@ private fun ChessMindApp(context: Context) {
         confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK", color = dialogAccentColor) } })
     if (hintOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत"), color = dialogTextColor) },
         text = { Text(hintText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK", color = dialogAccentColor) } })
-    if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = dialogTextColor) }, text = { Text(analysisText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
+    if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Итоги и анализ партии", "Game review", "对局复盘", "खेल का विश्लेषण"), color = dialogTextColor) }, text = { Text(analysisText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
 }
 
 private fun styleName(p: PlayerProfile): String = when {
@@ -697,7 +674,7 @@ private fun ChessBoard(fen: String, selected: Square?, targets: Set<Square>, las
                     }
                     Box(Modifier.weight(1f).fillMaxHeight().background(bg).clickable { onTap(square) }, contentAlignment = Alignment.Center) {
                         if (piece != null) Text(pieceGlyph(piece), fontSize = 34.sp,
-                            color = if (piece.isUpperCase()) Color(0xFFFFFCF3) else Color(0xFF18211D))
+                            color = if (piece.isUpperCase()) Color.White else Color(0xFF101010))
                         if (targets.contains(square) && piece == null) {
                             Box(Modifier.size(10.dp).background(Color(0xFF365B3C), RoundedCornerShape(50)))
                         }
@@ -734,7 +711,7 @@ private fun pieceLabel(piece: String): String = when {
 }
 
 private fun pieceGlyph(piece: Char): String = when (piece) {
-    'K' -> "♔"; 'Q' -> "♕"; 'R' -> "♖"; 'B' -> "♗"; 'N' -> "♘"; 'P' -> "♙"
+    'K' -> "♚"; 'Q' -> "♛"; 'R' -> "♜"; 'B' -> "♝"; 'N' -> "♞"; 'P' -> "♟"
     'k' -> "♚"; 'q' -> "♛"; 'r' -> "♜"; 'b' -> "♝"; 'n' -> "♞"; 'p' -> "♟"; else -> ""
 
 }
