@@ -252,6 +252,7 @@ private fun ChessMindApp(context: Context) {
     var languageOpen by remember { mutableStateOf(false) }
     var hintOpen by remember { mutableStateOf(false) }
     var authorOpen by remember { mutableStateOf(false) }
+    var chatOpen by remember { mutableStateOf(false) }
     var analysisOpen by remember { mutableStateOf(false) }
     var analysisText by remember { mutableStateOf("") }
     var lastHumanBeforeFen by remember { mutableStateOf(gamePrefs.getString("last_human_fen", null)) }
@@ -272,6 +273,8 @@ private fun ChessMindApp(context: Context) {
     var clockPreset by remember { mutableIntStateOf(gamePrefs.getInt("clock_preset", 5)) }
     var whiteSeconds by remember { mutableIntStateOf(gamePrefs.getInt("white_seconds", 300)) }
     var blackSeconds by remember { mutableIntStateOf(gamePrefs.getInt("black_seconds", 300)) }
+    var chatInput by remember { mutableStateOf("") }
+    var chatMessages by remember { mutableStateOf(listOf("ChessMind: Привет! Спроси меня о шахматах.")) }
     var hintText by remember { mutableStateOf("") }
     fun tr(ru: String, en: String, zh: String, hi: String) = when(language) { "en" -> en; "zh" -> zh; "hi" -> hi; else -> ru }
     val difficultyLabels = listOf(tr("Новичок", "Beginner", "初学者", "शुरुआती"), tr("Лёгкая", "Easy", "简单", "आसान"), tr("Средняя", "Medium", "中等", "मध्यम"), tr("Сложная", "Hard", "困难", "कठिन"))
@@ -339,6 +342,26 @@ private fun ChessMindApp(context: Context) {
         val m = if (legal.isEmpty()) null else engine.bestMove(position, 3)
         hintText = if (m == null) tr("Нет доступных ходов.", "No legal moves.", "没有合法走法。", "कोई वैध चाल नहीं।") else tr("Попробуй ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. Это простой ориентир, не глубокий анализ.", "Try ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. This is a simple suggestion, not deep analysis.", "试试 ${m.from.name.lowercase()} → ${m.to.name.lowercase()}。这是简单建议，并非深度分析。", "${m.from.name.lowercase()} → ${m.to.name.lowercase()} आज़माएँ। यह सरल सुझाव है।")
         hintOpen = true
+    }
+    fun sendChat() {
+        val q = chatInput.trim()
+        if (q.isNotEmpty()) {
+            val pos = Board().apply { loadFromFen(board.fen) }
+            val legalCount = pos.legalMoves().size
+            val side = if (pos.sideToMove.toString() == "WHITE") tr("белых", "White", "白方", "सफेद") else tr("чёрных", "Black", "黑方", "काले")
+            val a = when {
+                q.contains("подсказ", true) || q.contains("hint", true) || q.contains("ход", true) || q.contains("move", true) -> {
+                    val best = if (legalCount > 0) engine.bestMove(pos, 3) else null
+                    if (best == null) tr("В этой позиции ходов нет: партия завершена.", "There are no legal moves: the game is over.", "当前没有合法走法：对局已结束。", "कोई वैध चाल नहीं: खेल समाप्त हो गया है।")
+                    else tr("Попробуй ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. Это рекомендация встроенного эвристического движка, а не экспертный анализ.", "Try ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. This is a recommendation from the built-in heuristic engine, not expert analysis.", "可以尝试 ${best.from.name.lowercase()} → ${best.to.name.lowercase()}。这是内置启发式引擎的建议，并非专家级分析。", "${best.from.name.lowercase()} → ${best.to.name.lowercase()} आज़माएँ। यह अंतर्निहित इंजन का सुझाव है।")
+                }
+                q.contains("позици", true) || q.contains("position", true) || q.contains("сейчас", true) -> tr("Сейчас ход ${side}. Доступно легальных ходов: $legalCount. Я могу предложить вариант по запросу «подскажи ход».", "It is ${side} to move. Legal moves available: $legalCount. Ask me to suggest a move for a candidate.", "现在轮到${side}。可用合法走法：$legalCount。你可以让我推荐一步。", "अब ${side} की चाल है। वैध चालें: $legalCount। सुझाव के लिए मुझसे चाल पूछें।")
+                q.contains("правил", true) || q.contains("rule", true) -> tr("Цель — поставить мат королю соперника. Шах означает нападение на короля; из-под шаха нужно обязательно выйти.", "The goal is to checkmate the opponent’s king. Check means the king is under attack and must be protected.", "目标是将死对方的王。将军表示王受到攻击，必须应将。", "लक्ष्य प्रतिद्वंद्वी के राजा को शह-मात देना है। शह में राजा पर हमला होता है और उससे बचना अनिवार्य है।")
+                else -> tr("Я могу оценить текущую позицию, подсказать ход или объяснить базовые правила. Спроси, например: «Что сейчас происходит?» или «Подскажи ход».", "I can describe the current position, suggest a move, or explain basic rules. Try: “What is happening?” or “Suggest a move.”", "我可以介绍当前局面、推荐走法或解释基本规则。可以问：“现在局面如何？”或“推荐一步棋”。", "मैं वर्तमान स्थिति समझा सकता हूँ, चाल सुझा सकता हूँ या बुनियादी नियम बता सकता हूँ। पूछें: “अभी स्थिति क्या है?”")
+            }
+            chatMessages = chatMessages + tr("Вы: $q", "You: $q", "你：$q", "आप: $q") + "ChessMind: $a"
+            chatInput = ""
+        }
     }
     LaunchedEffect(clockEnabled, board.sideToMove, whiteSeconds, blackSeconds) {
         if (clockEnabled && !board.isMated && !board.isDraw && whiteSeconds > 0 && blackSeconds > 0) {
@@ -448,6 +471,8 @@ private fun ChessMindApp(context: Context) {
                     Spacer(Modifier.height(9.dp))
                     OutlinedButton(onClick = { rulesOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("♟  ${tr("Правила игры", "How to play", "游戏规则", "खेल के नियम")}", color = cream, maxLines = 1, softWrap = false) }
                     Spacer(Modifier.height(9.dp))
+                    OutlinedButton(onClick = { menuOpen = false; chatOpen = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF314D72))) { Text("💬  ${tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट")}", color = cream, maxLines = 1, softWrap = false) }
+                    Spacer(Modifier.height(9.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { languageOpen = true }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text("◎  ${tr("Язык", "Language", "语言", "भाषा")}", color = cream, maxLines = 1, softWrap = false) }
                         OutlinedButton(onClick = { darkTheme = !darkTheme; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putBoolean("dark_theme", darkTheme).apply() }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF5A6075))) { Text(if (darkTheme) "☀  ${tr("Светлая", "Light", "浅色", "हल्की")}" else "☾  ${tr("Тёмная", "Dark", "深色", "गहरी")}", color = cream, maxLines = 1, softWrap = false) }
@@ -478,7 +503,7 @@ private fun ChessMindApp(context: Context) {
                             Text("♟  ${clockText(blackSeconds)}", Modifier.padding(vertical = 12.dp), color = Color(0xFFF7F3EA), fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
-                    TextButton(onClick = { clockSettingsOpen = true }) { Text("◷  ${clockPreset} мин", color = accentColor) }
+                    TextButton(onClick = { clockPreset = if (clockPreset == 5) 10 else 5; whiteSeconds = clockPreset * 60; blackSeconds = clockPreset * 60 }) { Text("◷  ${clockPreset}+0", color = accentColor) }
                 }
                 Spacer(Modifier.height(8.dp))
                 Surface(color = if (darkTheme) panel else Color(0xFFE8EDF3), shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
@@ -506,7 +531,140 @@ private fun ChessMindApp(context: Context) {
                     Button(onClick = { analysisText = if (lastHumanBeforeFen != null && lastHumanMove != null) engine.analyzeMove(lastHumanBeforeFen!!, lastHumanMove!!.first, lastHumanMove!!.second, difficulty.coerceAtMost(3)) else tr("Сделай ход, затем нажми «Анализ».", "Make a move, then tap Analysis.", "先走一步，然后点击分析。", "पहले चाल चलें, फिर विश्लेषण दबाएँ।"); analysisOpen = true }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), contentPadding = PaddingValues(horizontal = 3.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF159B61), contentColor = Color.White)) {
                         Text("▥  ${tr("Анализ", "Analyze", "分析", "विश्लेषण")}", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
-                    Button(onClick = { undoTurn() }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97716), contentColor = Color.White), contentPadding = PaddingValues(horizontal = 3.dp)) {
+                    Button(onClick = {
+                        if (history.isNotEmpty() && !thinking) {
+                            board = Board().apply { loadFromFen(history.last()) }
+                            history = history.dropLast(1)
+                            if (sanHistory.isNotEmpty()) sanHistory = sanHistory.dropLast(1)
+                            refresh(); status = tr("Ход отменён.", "Move undone.", "已撤销一步。", "चाल वापस ली गई।")
+                        }
+                    }, modifier = Modifier.weight(1f).height(54.dp), shape = RoundedCornerShape(15.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97716), contentColor = Color.White), contentPadding = PaddingValues(horizontal = 3.dp)) {
                         Text("↶  ${tr("Отмена", "Undo", "悔棋", "पूर्ववत")}", fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false, fontSize = 11.sp)
                     }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                    OutlinedButton(onClick = { chatOpen = true }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                        Text("●  ${tr("Чат", "Chat", "聊天", "चैट")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
+                    OutlinedButton(onClick = { reset() }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                        Text("＋  ${tr("Новая партия", "New game", "新对局", "नया खेल")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
+                    OutlinedButton(onClick = { clockEnabled = !clockEnabled }, modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                        Text("◷  ${tr("Часы", "Clock", "计时", "घड़ी")}", color = textColor, maxLines = 1, softWrap = false, fontSize = 11.sp)
+                    }
+                }
+                Text(tr("ИСТОРИЯ ХОДОВ", "MOVE HISTORY", "走棋记录", "चाल इतिहास"), Modifier.fillMaxWidth(), color = accentColor, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(if (sanHistory.isEmpty()) tr("Партия ещё не началась", "Game has not started", "对局尚未开始", "खेल अभी शुरू नहीं हुआ") else sanHistory.takeLast(8).joinToString("   "),
+                    Modifier.fillMaxWidth(), color = gameMutedColor, fontSize = 11.sp)
+                Text(tr("ТВОЯ ЗАДАЧА — СТАТЬ СИЛЬНЕЕ. НЕ ПРОСТО ВЫИГРАТЬ.", "YOUR GOAL IS TO IMPROVE, NOT JUST WIN.", "目标是不断进步，而不只是获胜。", "लक्ष्य बेहतर बनना है, सिर्फ जीतना नहीं।"), color = accentColor, fontSize = 9.sp, letterSpacing = 0.6.sp)
+            }
+            }
+        }
+    }
+    if (rulesOpen) AlertDialog(
+        containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp),
+        onDismissRequest = { rulesOpen = false },
+        title = { Text(tr("Правила шахмат", "Chess rules", "国际象棋规则", "शतरंज के नियम"), color = dialogTextColor, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(Modifier.heightIn(max = 470.dp).verticalScroll(rememberScrollState())) {
+                Text(tr("ЦЕЛЬ ИГРЫ", "THE GOAL", "游戏目标", "खेल का लक्ष्य"), color = dialogAccentColor, fontWeight = FontWeight.Bold)
+                Text(tr("Твоя задача — поставить мат королю соперника. Мат — это шах, от которого король уже не может спастись. Белые ходят первыми, затем игроки ходят по очереди.", "Your goal is to checkmate the opponent's king. Checkmate means the king is attacked and has no way to escape. White moves first, then players take turns.", "你的目标是将死对方的王。将死表示王受到攻击且无路可逃。白方先走，然后双方轮流走棋。", "आपका लक्ष्य विरोधी राजा को शह-मात देना है। शह-मात में राजा पर हमला होता है और बचने का कोई रास्ता नहीं होता। सफेद पहले चलता है।"), color = dialogTextColor)
+                Spacer(Modifier.height(10.dp))
+                Text(tr("КАК ХОДЯТ ФИГУРЫ", "HOW THE PIECES MOVE", "棋子如何移动", "मोहरों की चाल"), color = dialogAccentColor, fontWeight = FontWeight.Bold)
+                Text(tr("♙ Пешка — обычно идёт на 1 клетку вперёд. С начальной позиции может пойти на 2 клетки. Бьёт по диагонали на 1 клетку. Назад не ходит.\n\n♖ Ладья — ходит на любое число свободных клеток прямо: вверх, вниз, влево или вправо.\n\n♗ Слон — ходит по диагонали на любое число свободных клеток.\n\n♘ Конь — ходит буквой «Г»: две клетки в одном направлении и одну в сторону. Может перепрыгивать через фигуры.\n\n♕ Ферзь — ходит прямо и по диагонали на любое число свободных клеток.\n\n♔ Король — ходит на 1 клетку в любом направлении. Нельзя делать ход, после которого твой король останется под ударом.", "♙ Pawn — normally moves 1 square forward; from its starting square it may move 2. It captures 1 square diagonally and never moves backward.\n\n♖ Rook — moves any number of free squares in straight lines: up, down, left or right.\n\n♗ Bishop — moves any number of free squares diagonally.\n\n♘ Knight — moves in an L shape: two squares one way and one sideways. It can jump over pieces.\n\n♕ Queen — moves any number of free squares straight or diagonally.\n\n♔ King — moves 1 square in any direction. You may not leave your king under attack.", "♙ 兵 — 通常向前走一格，起始位置可走两格；斜向一格吃子，不能后退。\n\n♖ 车 — 沿横线或竖线移动任意格。\n\n♗ 象 — 沿对角线移动任意格。\n\n♘ 马 — 走日字形，可以跳过其他棋子。\n\n♕ 后 — 可以直线或斜线移动任意格。\n\n♔ 王 — 向任意方向走一格，不能走到被攻击的位置。", "♙ प्यादा — सामान्यतः एक घर आगे चलता है; शुरुआती जगह से दो घर चल सकता है। तिरछे एक घर मारता है। पीछे नहीं चलता।\n\n♖ हाथी — सीधी पंक्ति या स्तंभ में चलता है।\n\n♗ ऊँट — तिरछे चलता है।\n\n♘ घोड़ा — L आकार में चलता है और मोहरों के ऊपर से कूद सकता है।\n\n♕ वज़ीर — सीधा या तिरछा चलता है।\n\n♔ राजा — किसी भी दिशा में एक घर चलता है। अपने राजा को हमले में छोड़ना मना है।"), color = dialogTextColor)
+                Spacer(Modifier.height(10.dp))
+                Text(tr("ВАЖНЫЕ ПОНЯТИЯ", "IMPORTANT TERMS", "重要概念", "ज़रूरी बातें"), color = dialogAccentColor, fontWeight = FontWeight.Bold)
+                Text(tr("Шах — король под ударом. Нужно немедленно убрать его из-под удара, закрыться другой фигурой или забрать атакующую фигуру.\n\nМат — король под шахом, и спастись уже нельзя: партия проиграна.\n\nПат — король не под шахом, но у игрока нет допустимых ходов. Это ничья.\n\nПревращение пешки — когда пешка доходит до последней горизонтали, она превращается обычно в ферзя.\n\nРокировка — особый ход короля и ладьи для безопасности короля.", "Check — your king is under attack. Escape, block the attack, or capture the attacking piece.\n\nCheckmate — the king is in check and cannot escape: the game is lost.\n\nStalemate — the king is not in check, but the player has no legal move. It is a draw.\n\nPromotion — a pawn reaching the last rank usually becomes a queen.\n\nCastling — a special king-and-rook move that helps protect the king.", "将军 — 王受到攻击。必须躲开、挡住攻击或吃掉攻击棋子。\n\n将死 — 王被将军且无法逃脱，对局结束。\n\n逼和 — 王没有被将军，但没有合法走法，结果为和棋。\n\n升变 — 兵到达底线后通常升变为后。\n\n王车易位 — 王和车的一种特殊走法，用于保护王。", "शह — राजा पर हमला है। उसे हटाएँ, रास्ता रोकें या हमला करने वाले मोहरे को मारें।\n\nशह-मात — राजा शह में है और बच नहीं सकता; खेल हार गया।\n\nपट — राजा शह में नहीं है, लेकिन कोई वैध चाल नहीं है; यह ड्रॉ है।\n\nप्यादा अंतिम पंक्ति तक पहुँचे तो आमतौर पर वज़ीर बन जाता है।\n\nकैसलिंग — राजा और हाथी की विशेष चाल।"), color = dialogTextColor)
+            }
+        },
+        confirmButton = { TextButton(onClick = { rulesOpen = false }) { Text(tr("Понятно", "Got it", "知道了", "समझ गया"), color = dialogAccentColor) } }
+    )
+    if (languageOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { languageOpen = false }, title = { Text(tr("Выбор языка", "Choose language", "选择语言", "भाषा चुनें"), color = dialogTextColor) },
+        text = { Column {
+            listOf("ru" to "Русский", "en" to "English", "zh" to "中文", "hi" to "हिन्दी").forEach { (code, label) ->
+                TextButton(onClick = { language = code; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putString("language", code).apply(); languageOpen = false }) { Text(label, color = if (language == code) dialogAccentColor else dialogTextColor, maxLines = 1, softWrap = false) }
+            }
+        } }, confirmButton = { TextButton(onClick = { languageOpen = false }) { Text("OK", color = dialogAccentColor) } })
+    if (authorOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { authorOpen = false }, title = { Text("ChessMind", color = dialogTextColor) },
+        text = { Text(tr("Автор проекта: ChessMind. Версия прототипа.", "Project author: ChessMind. Prototype version.", "项目作者：ChessMind。原型版本。", "परियोजना लेखक: ChessMind। प्रोटोटाइप संस्करण।"), color = dialogTextColor) },
+        confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK", color = dialogAccentColor) } })
+    if (hintOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत"), color = dialogTextColor) },
+        text = { Text(hintText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK", color = dialogAccentColor) } })
+    if (chatOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { chatOpen = false }, title = { Text(tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट"), color = dialogTextColor) },
+        text = { Column {
+            LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = dialogTextColor, modifier = Modifier.padding(vertical = 4.dp)) } }
+            OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश"), color = dialogTextColor) }, textStyle = androidx.compose.ui.text.TextStyle(color = dialogTextColor), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = dialogTextColor, unfocusedTextColor = dialogTextColor, focusedBorderColor = dialogAccentColor, unfocusedBorderColor = dialogAccentColor, focusedLabelColor = dialogAccentColor, unfocusedLabelColor = dialogTextColor, cursorColor = dialogAccentColor, focusedContainerColor = Color(0xFF1A2338), unfocusedContainerColor = Color(0xFF1A2338), focusedPlaceholderColor = dialogTextColor, unfocusedPlaceholderColor = dialogTextColor))
+        } }, confirmButton = { Row {
+            TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें"), color = dialogAccentColor) }
+            TextButton(onClick = { chatOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) }
+        } })
+    if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Анализ хода", "Move analysis", "走法分析", "चाल विश्लेषण"), color = dialogTextColor) }, text = { Text(analysisText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
+}
+
+private fun styleName(p: PlayerProfile): String = when {
+    p.aggressive > p.games * 2 -> "Атакующий"
+    p.tactical > p.games * 2 -> "Тактический"
+    else -> "Исследуется"
+}
+
+@Composable
+private fun StatCard(label: String, value: String, modifier: Modifier = Modifier, surfaceColor: Color = panel, textColor: Color = cream, accentColor: Color = green) {
+    Surface(modifier, color = surfaceColor, shape = RoundedCornerShape(12.dp)) {
+        Column(Modifier.padding(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(value, color = textColor, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text(label, color = accentColor, fontSize = 9.sp, letterSpacing = 0.8.sp)
+        }
+    }
+}
+
+@Composable
+private fun ChessBoard(fen: String, selected: Square?, targets: Set<Square>, lastMove: Pair<Square, Square>?, onTap: (Square) -> Unit) {
+    val squares = remember(fen) { parseFenBoard(fen) }
+    Column(Modifier.fillMaxWidth().widthIn(max = 440.dp).aspectRatio(1f).background(Color(0xFFD5A64A), RoundedCornerShape(8.dp)).padding(3.dp)) {
+        for (row in 0..7) {
+            Row(Modifier.weight(1f)) {
+                for (col in 0..7) {
+                    val square = Square.values().first { it.name == "${'A' + col}${8 - row}" }
+                    val piece = squares[row][col]
+                    val isLast = lastMove?.let { square == it.first || square == it.second } ?: false
+                    val bg = when {
+                        selected == square -> Color(0xFFE6C65B)
+                        square in targets -> Color(0xFF9AB77A)
+                        isLast -> Color(0xFFB9C78B)
+                        (row + col) % 2 == 0 -> lightSquare
+                        else -> darkSquare
+                    }
+                    Box(Modifier.weight(1f).fillMaxHeight().background(bg).clickable { onTap(square) }, contentAlignment = Alignment.Center) {
+                        if (piece != null) Text(pieceGlyph(piece), fontSize = 34.sp,
+                            color = if (piece.isUpperCase()) Color(0xFFFFFCF3) else Color(0xFF18211D))
+                        if (targets.contains(square) && piece == null) {
+                            Box(Modifier.size(10.dp).background(Color(0xFF365B3C), RoundedCornerShape(50)))
+                        }
+                        if (col == 0) Text("${8-row}", Modifier.align(Alignment.TopStart).padding(2.dp),
+                            color = Color(0xFF26352D), fontSize = 8.sp)
+                        if (row == 7) Text("${'a'+col}", Modifier.align(Alignment.BottomEnd).padding(2.dp),
+                            color = Color(0xFF26352D), fontSize = 8.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun parseFenBoard(fen: String): List<List<Char?>> {
+    val rows = fen.substringBefore(' ').split('/')
+    return rows.map { row ->
+        val cells = mutableListOf<Char?>()
+        row.forEach { ch ->
+            if (ch.isDigit()) repeat(ch.digitToInt()) { cells.add(null) } else cells.add(ch)
+        }
+        cells
+    }
+}
+
+private fun pieceGlyph(piece: Char): String = when (piece) {
+    'K' -> "♔"; 'Q' -> "♕"; 'R' -> "♖"; 'B' -> "♗"; 'N' -> "♘"; 'P' -> "♙"
+    'k' -> "♚"; 'q' -> "♛"; 'r' -> "♜"; 'b' -> "♝"; 'n' -> "♞"; 'p' -> "♟"; else -> ""
+
 }
