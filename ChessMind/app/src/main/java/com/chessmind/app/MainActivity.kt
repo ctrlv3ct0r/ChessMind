@@ -120,6 +120,56 @@ private class AdaptiveEngine(private val coach: AdaptiveCoach) {
         val pick = weightedIndex(weights)
         return choicePool[pick].move
     }
+    fun bestMove(board: Board, depth: Int = 3): Move? {
+        val legal = board.legalMoves()
+        if (legal.isEmpty()) return null
+        var best: Move? = null
+        var bestScore = Double.NEGATIVE_INFINITY
+        var alpha = Double.NEGATIVE_INFINITY
+        val beta = Double.POSITIVE_INFINITY
+        for (move in legal) {
+            val child = Board().apply { loadFromFen(board.fen); doMove(move) }
+            val score = -negamax(child, depth - 1, -beta, -alpha)
+            if (score > bestScore) { bestScore = score; best = move }
+            alpha = maxOf(alpha, score)
+        }
+        return best
+    }
+    private fun negamax(board: Board, depth: Int, alphaStart: Double, beta: Double): Double {
+        if (board.isMated) return -100000.0 - depth
+        if (board.isDraw) return 0.0
+        if (depth <= 0) return evaluateForTurn(board)
+        var alpha = alphaStart
+        var best = Double.NEGATIVE_INFINITY
+        for (move in board.legalMoves()) {
+            val child = Board().apply { loadFromFen(board.fen); doMove(move) }
+            val score = -negamax(child, depth - 1, -beta, -alpha)
+            best = maxOf(best, score)
+            alpha = maxOf(alpha, score)
+            if (alpha >= beta) break
+        }
+        return best
+    }
+    private fun evaluateForTurn(board: Board): Double {
+        val fen = board.fen.split(" ")
+        val values = mapOf('p' to 100, 'n' to 320, 'b' to 335, 'r' to 500, 'q' to 900, 'k' to 0)
+        var whiteScore = 0.0
+        fen[0].split("/").forEachIndexed { row, rank ->
+            var file = 0
+            rank.forEach { ch ->
+                if (ch.isDigit()) file += ch.digitToInt() else {
+                    val sign = if (ch.isUpperCase()) 1.0 else -1.0
+                    val value = (values[ch.lowercaseChar()] ?: 0).toDouble()
+                    val center = 7.0 - (abs(3.5 - file) + abs(3.5 - row))
+                    val positional = if (ch.lowercaseChar() == 'n' || ch.lowercaseChar() == 'b') center * 2.0 else 0.0
+                    whiteScore += sign * (value + positional)
+                    file++
+                }
+            }
+        }
+        val whiteToMove = board.sideToMove.toString() == "WHITE"
+        return if (whiteToMove) whiteScore else -whiteScore
+    }
     private fun Double.pow2() = this * this
     private fun weightedIndex(weights: List<Double>): Int {
         val total = weights.sum(); var x = Random.nextDouble() * total
@@ -180,6 +230,11 @@ private fun ChessMindApp(context: Context) {
     var authorOpen by remember { mutableStateOf(false) }
     var chatOpen by remember { mutableStateOf(false) }
     var language by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getString("language", "ru") ?: "ru") }
+    var darkTheme by remember { mutableStateOf(context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).getBoolean("dark_theme", true)) }
+    val bgColor = if (darkTheme) bgColor else Color(0xFFF5F3EE)
+    val surfaceColor = if (darkTheme) surfaceColor else Color(0xFFFFFFFF)
+    val textColor = if (darkTheme) textColor else Color(0xFF18211D)
+    val accentColor = if (darkTheme) accentColor else Color(0xFF315F3D)
     var clockEnabled by remember { mutableStateOf(false) }
     var clockPreset by remember { mutableIntStateOf(5) }
     var whiteSeconds by remember { mutableIntStateOf(300) }
@@ -195,7 +250,7 @@ private fun ChessMindApp(context: Context) {
     fun showHint() {
         val position = Board().apply { loadFromFen(board.fen) }
         val legal = position.legalMoves()
-        val m = if (legal.isEmpty()) null else engine.choose(position, profile)
+        val m = if (legal.isEmpty()) null else engine.bestMove(position, 3)
         hintText = if (m == null) tr("Нет доступных ходов.", "No legal moves.", "没有合法走法。", "कोई वैध चाल नहीं।") else tr("Попробуй ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. Это простой ориентир, не глубокий анализ.", "Try ${m.from.name.lowercase()} → ${m.to.name.lowercase()}. This is a simple suggestion, not deep analysis.", "试试 ${m.from.name.lowercase()} → ${m.to.name.lowercase()}。这是简单建议，并非深度分析。", "${m.from.name.lowercase()} → ${m.to.name.lowercase()} आज़माएँ। यह सरल सुझाव है।")
         hintOpen = true
     }
@@ -207,7 +262,7 @@ private fun ChessMindApp(context: Context) {
             val side = if (pos.sideToMove.toString() == "WHITE") tr("белых", "White", "白方", "सफेद") else tr("чёрных", "Black", "黑方", "काले")
             val a = when {
                 q.contains("подсказ", true) || q.contains("hint", true) || q.contains("ход", true) || q.contains("move", true) -> {
-                    val best = if (legalCount > 0) engine.choose(pos, profile) else null
+                    val best = if (legalCount > 0) engine.bestMove(pos, 3) else null
                     if (best == null) tr("В этой позиции ходов нет: партия завершена.", "There are no legal moves: the game is over.", "当前没有合法走法：对局已结束。", "कोई वैध चाल नहीं: खेल समाप्त हो गया है।")
                     else tr("Попробуй ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. Это рекомендация встроенного эвристического движка, а не экспертный анализ.", "Try ${best.from.name.lowercase()} → ${best.to.name.lowercase()}. This is a recommendation from the built-in heuristic engine, not expert analysis.", "可以尝试 ${best.from.name.lowercase()} → ${best.to.name.lowercase()}。这是内置启发式引擎的建议，并非专家级分析。", "${best.from.name.lowercase()} → ${best.to.name.lowercase()} आज़माएँ। यह अंतर्निहित इंजन का सुझाव है।")
                 }
@@ -297,8 +352,9 @@ private fun ChessMindApp(context: Context) {
         }
     }
 
-    MaterialTheme(colorScheme = darkColorScheme(primary = green, background = forest, surface = panel, onSurface = cream)) {
-        Surface(Modifier.fillMaxSize(), color = forest) {
+    val scheme = if (darkTheme) darkColorScheme(primary = green, background = forest, surface = panel, onSurface = cream) else lightColorScheme(primary = Color(0xFF315F3D), background = Color(0xFFF5F3EE), surface = Color.White, onSurface = Color(0xFF18211D), onPrimary = Color.White, onBackground = Color(0xFF18211D))
+    MaterialTheme(colorScheme = scheme) {
+        Surface(Modifier.fillMaxSize(), color = bgColor) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Column {
@@ -402,7 +458,7 @@ private fun ChessMindApp(context: Context) {
         text = { Text(hintText) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK") } })
     if (chatOpen) AlertDialog(onDismissRequest = { chatOpen = false }, title = { Text(tr("Чат с ChessMind", "Chat with ChessMind", "与 ChessMind 聊天", "ChessMind से चैट")) },
         text = { Column {
-            LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = cream, modifier = Modifier.padding(vertical = 4.dp)) } }
+            LazyColumn(Modifier.heightIn(max = 220.dp)) { itemsIndexed(chatMessages) { _, msg -> Text(msg, color = textColor, modifier = Modifier.padding(vertical = 4.dp)) } }
             OutlinedTextField(value = chatInput, onValueChange = { chatInput = it }, label = { Text(tr("Сообщение", "Message", "消息", "संदेश")) })
         } }, confirmButton = { Row {
             TextButton(onClick = { sendChat() }) { Text(tr("Отправить", "Send", "发送", "भेजें")) }
