@@ -20,6 +20,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -267,6 +269,8 @@ private class AdaptiveEngine(private val coach: AdaptiveCoach) {
 
 @Composable
 private fun ChessMindApp(context: Context) {
+    val clipboardManager = LocalClipboardManager.current
+    var copiedWallet by remember { mutableStateOf("") }
     val coach = remember { AdaptiveCoach(context) }
     val engine = remember { AdaptiveEngine(coach) }
     val gamePrefs = remember { context.getSharedPreferences("chessmind_saved_game", Context.MODE_PRIVATE) }
@@ -632,9 +636,44 @@ private fun ChessMindApp(context: Context) {
                 TextButton(onClick = { language = code; context.getSharedPreferences("chessmind_settings", Context.MODE_PRIVATE).edit().putString("language", code).apply(); languageOpen = false }) { Text(label, color = if (language == code) dialogAccentColor else dialogTextColor, maxLines = 1, softWrap = false) }
             }
         } }, confirmButton = { TextButton(onClick = { languageOpen = false }) { Text("OK", color = dialogAccentColor) } })
-    if (authorOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { authorOpen = false }, title = { Text("ChessMind", color = dialogTextColor) },
-        text = { Text(tr("Автор проекта: ChessMind. Версия прототипа.", "Project author: ChessMind. Prototype version.", "项目作者：ChessMind。原型版本。", "परियोजना लेखक: ChessMind। प्रोटोटाइप संस्करण।"), color = dialogTextColor) },
-        confirmButton = { TextButton(onClick = { authorOpen = false }) { Text("OK", color = dialogAccentColor) } })
+    if (authorOpen) AlertDialog(
+        containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp),
+        onDismissRequest = { authorOpen = false },
+        title = { Text("Об авторе", color = dialogTextColor, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Made by CTRLV3ct0re & CHATGPT", color = dialogTextColor, fontWeight = FontWeight.SemiBold)
+                Text("Donate:", color = dialogAccentColor, fontWeight = FontWeight.Bold)
+                val wallets = listOf(
+                    "TRC20" to "TXfeBWsRfm4mnQ9wyafqXKydHPsFSiyYmA",
+                    "ERC20" to "0x3e866900c550232f1e7EC0b159B5748DaF4587Fe",
+                    "TON" to "UQBykG5WvWNgonGR4V5q1hj0kbED_-jnZkttpQNrvQB7bhxf",
+                    "SOL" to "4EJELz9HcXWmoLouvREhjPEmhfzqzSniRd2nqp8sG5Wj"
+                )
+                wallets.forEach { (network, address) ->
+                    Column(
+                        Modifier.fillMaxWidth()
+                            .background(Color(0xFF1B2438), RoundedCornerShape(12.dp))
+                            .clickable {
+                                clipboardManager.setText(AnnotatedString(address))
+                                copiedWallet = network
+                            }.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(network, color = dialogAccentColor, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.weight(1f))
+                            Text(if (copiedWallet == network) "Скопировано ✓" else "Нажми, чтобы скопировать",
+                                color = if (copiedWallet == network) Color(0xFF58D68D) else dialogTextColor,
+                                fontSize = 12.sp)
+                        }
+                        Text(address, color = dialogTextColor, fontSize = 12.sp, lineHeight = 17.sp)
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { authorOpen = false; copiedWallet = "" }) { Text("Закрыть", color = dialogAccentColor) } }
+    )
     if (hintOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { hintOpen = false }, title = { Text(tr("Подсказка тренера", "Coach hint", "教练提示", "कोच संकेत"), color = dialogTextColor) },
         text = { Text(hintText, color = dialogTextColor) }, confirmButton = { TextButton(onClick = { hintOpen = false }) { Text("OK", color = dialogAccentColor) } })
     if (analysisOpen) AlertDialog(containerColor = Color(0xFF111827), tonalElevation = 12.dp, shape = RoundedCornerShape(24.dp), onDismissRequest = { analysisOpen = false }, title = { Text(tr("Итоги и анализ партии", "Game review", "对局复盘", "खेल का विश्लेषण"), color = dialogTextColor) }, text = { Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) { Text(analysisText, color = dialogTextColor) } }, confirmButton = { TextButton(onClick = { analysisOpen = false }) { Text(tr("Закрыть", "Close", "关闭", "बंद करें"), color = dialogAccentColor) } })
