@@ -642,7 +642,7 @@ private fun ChessMindApp(context: Context) {
         title = { Text("Об авторе", color = dialogTextColor, fontWeight = FontWeight.Bold) },
         text = {
             Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Made by CTRLV3ct0re & CHATGPT", color = dialogTextColor, fontWeight = FontWeight.SemiBold)
+                Text("Made by CTRLV3ct0r & CHATGPT", color = dialogTextColor, fontWeight = FontWeight.SemiBold)
                 Text("Donate:", color = dialogAccentColor, fontWeight = FontWeight.Bold)
                 val wallets = listOf(
                     "TRC20" to "TXfeBWsRfm4mnQ9wyafqXKydHPsFSiyYmA",
